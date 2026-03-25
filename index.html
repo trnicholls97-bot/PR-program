@@ -273,6 +273,27 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .empty{text-align:center;padding:60px 30px;color:var(--muted)}
 .empty-icon{font-size:44px;margin-bottom:12px}
 .empty p{font-size:14px;line-height:1.5}
+/* LIBRARY MODAL */
+.lib-modal-overlay{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+.lib-modal-overlay.open{transform:translateX(0)}
+.lib-modal-header{display:flex;align-items:center;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid var(--border);flex-shrink:0;gap:4px;background:var(--bg)}
+.lib-modal-back-btn{background:none;border:none;color:var(--accent);font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;cursor:pointer;padding:6px 10px 6px 0;border-radius:8px;display:none;align-items:center;gap:2px;flex-shrink:0;white-space:nowrap}
+.lib-modal-back-btn.visible{display:flex}
+.lib-modal-title{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+.lib-modal-close-btn{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px 0 4px 8px;line-height:1;flex-shrink:0}
+.lib-modal-content{flex:1;overflow-y:auto;scrollbar-width:none}
+.lib-modal-content::-webkit-scrollbar{display:none}
+.lib-modal-search-bar{padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.lib-modal-search-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;padding:12px 16px;outline:none;transition:border-color .15s;-webkit-appearance:none;box-sizing:border-box}
+.lib-modal-search-input:focus{border-color:var(--accent)}
+.lib-modal-search-input::placeholder{color:var(--muted)}
+.lib-muscle-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.lib-muscle-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer;transition:border-color .12s,background .12s;-webkit-tap-highlight-color:transparent}
+.lib-muscle-card:active{background:var(--surface2);border-color:var(--accent)}
+.lib-muscle-icon{font-size:28px;margin-bottom:6px}
+.lib-muscle-name{font-weight:700;font-size:14px}
+.lib-muscle-count{font-size:11px;color:var(--muted);margin-top:2px}
+.lib-ex-list{padding:8px 0}
 </style>
 </head>
 <body>
@@ -348,7 +369,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
       </div>
       <div class="profile-field">
        <label>Sex</label>
-       <select id="prof-sex" onchange="saveProfile()">
+       <select id="prof-sex" onchange="saveProfile();updateFormulaFields()">
         <option value="">—</option>
         <option value="male">Male</option>
         <option value="female">Female</option>
@@ -368,13 +389,48 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
        </div>
       </div>
      </div>
+     <div class="profile-row" style="grid-template-columns:1fr">
+      <div class="profile-field">
+       <label>BMR Formula</label>
+       <select id="prof-formula" onchange="saveProfile();updateFormulaFields()">
+        <option value="mifflin">Mifflin-St Jeor (Total Weight)</option>
+        <option value="mifflin-lean">Option 1 — Mifflin-St Jeor w/ Lean Mass</option>
+        <option value="katch">Option 2 — Katch-McArdle</option>
+        <option value="navy">Option 3 — Navy Method (Auto-estimate BF%)</option>
+       </select>
+      </div>
+     </div>
+     <div id="bf-pct-row" class="profile-row" style="display:none;grid-template-columns:1fr">
+      <div class="profile-field">
+       <label>Body Fat %</label>
+       <input type="number" id="prof-bf" placeholder="15" inputmode="decimal" oninput="saveProfile()">
+      </div>
+     </div>
+     <div id="navy-rows" style="display:none">
+      <div class="profile-row">
+       <div class="profile-field">
+        <label>Neck (in)</label>
+        <input type="number" id="prof-neck" placeholder="15.5" inputmode="decimal" oninput="saveProfile()">
+       </div>
+       <div class="profile-field">
+        <label>Waist (in)</label>
+        <input type="number" id="prof-waist" placeholder="32" inputmode="decimal" oninput="saveProfile()">
+       </div>
+      </div>
+      <div id="navy-hip-row" class="profile-row" style="display:none;grid-template-columns:1fr">
+       <div class="profile-field">
+        <label>Hip (in)</label>
+        <input type="number" id="prof-hip" placeholder="38" inputmode="decimal" oninput="saveProfile()">
+       </div>
+      </div>
+     </div>
     </div>
    </div>
    <div id="calorie-result-block" style="display:none">
     <div class="calorie-result">
      <div>
       <div class="calorie-label">Daily maintenance calories</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:4px">Mifflin-St Jeor · lightly active (1.375×)</div>
+      <div id="tdee-formula-label" style="font-size:10px;color:var(--muted);margin-top:4px">Mifflin-St Jeor · lightly active (1.375×)</div>
      </div>
      <div style="text-align:right">
       <div class="calorie-val" id="tdee-val">—</div>
@@ -416,14 +472,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
    <!-- EXERCISE LIBRARY -->
    <div class="section-label">Exercise Library</div>
    <div class="settings-group">
-    <div class="settings-row" style="cursor:pointer" onclick="toggleLibrary()">
+    <div class="settings-row" style="cursor:pointer" onclick="openLibraryModal()">
      <div>
       <div class="settings-row-label">Edit Rep &amp; Weight Targets</div>
-      <div class="settings-row-sub">Adjust targets for any exercise</div>
+      <div class="settings-row-sub">Browse by muscle group &amp; adjust targets</div>
      </div>
-     <span style="color:var(--accent)" id="lib-toggle-icon">&#9660;</span>
+     <span style="color:var(--accent)">&#8250;</span>
     </div>
-    <div id="library-body" style="display:none"></div>
    </div>
 
    <!-- ADD MOVEMENTS -->
@@ -544,6 +599,22 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
  </div>
 </div>
 
+<!-- LIBRARY MODAL -->
+<div class="lib-modal-overlay" id="lib-modal">
+ <div class="lib-modal-header">
+  <button class="lib-modal-back-btn" id="lib-modal-back" onclick="libModalBack()">
+   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+   Back
+  </button>
+  <div class="lib-modal-title" id="lib-modal-title">Exercise Library</div>
+  <button class="lib-modal-close-btn" onclick="closeLibraryModal()">&#10005;</button>
+ </div>
+ <div class="lib-modal-content" id="lib-modal-content"></div>
+ <div class="lib-modal-search-bar">
+  <input class="lib-modal-search-input" id="lib-modal-search" type="search" placeholder="Search exercises..." oninput="filterLibrarySearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+ </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="workouts.js"></script>
@@ -562,7 +633,7 @@ const ACCENT_PRESETS=[
 // ══════════════════════════════════════════════
 let S={
   accentColor:'#ff6b35',
-  profile:{age:'',sex:'',weight:'',ft:'',in:''},
+  profile:{age:'',sex:'',weight:'',ft:'',in:'',formula:'mifflin',bfPct:'',neck:'',waist:'',hip:''},
   exerciseOverrides:{},
   dayPlans:JSON.parse(JSON.stringify(DEFAULT_DAY_PLANS)),
   currentSession:null,
@@ -630,6 +701,32 @@ function scrollToCenter(el){
 // ══════════════════════════════════════════════
 //  CALORIE CALCULATIONS
 // ══════════════════════════════════════════════
+function calcNavyBF(){
+  const p=S.profile;
+  const sex=p.sex,wLbs=parseFloat(p.weight);
+  const ft=parseFloat(p.ft)||0,inches=parseFloat(p.in)||0;
+  const hIn=ft*12+inches;
+  const neck=parseFloat(p.neck),waist=parseFloat(p.waist);
+  if(!sex||!hIn||!neck||!waist)return null;
+  let bf;
+  if(sex==='male'){
+    if(waist<=neck)return null;
+    bf=(495/(1.0324-0.19077*Math.log10(waist-neck)+0.15456*Math.log10(hIn)))-450;
+  }else{
+    const hip=parseFloat(p.hip);
+    if(!hip||waist+hip<=neck)return null;
+    bf=(495/(1.29579-0.35004*Math.log10(waist+hip-neck)+0.22100*Math.log10(hIn)))-450;
+  }
+  if(!isFinite(bf)||bf<=0||bf>=100)return null;
+  return bf;
+}
+function getEffectiveBF(){
+  const p=S.profile;
+  const formula=p.formula||'mifflin';
+  if(formula==='mifflin-lean'||formula==='katch'){const v=parseFloat(p.bfPct);return(v>0&&v<100)?v:null;}
+  if(formula==='navy')return calcNavyBF();
+  return null;
+}
 function calcTDEE(){
   const p=S.profile;
   const age=parseFloat(p.age),sex=p.sex,wLbs=parseFloat(p.weight);
@@ -637,12 +734,34 @@ function calcTDEE(){
   const hIn=ft*12+inches;
   if(!age||!sex||!wLbs||!hIn)return null;
   const wKg=wLbs*0.453592,hCm=hIn*2.54;
-  const bmr=sex==='male'?(10*wKg)+(6.25*hCm)-(5*age)+5:(10*wKg)+(6.25*hCm)-(5*age)-161;
+  const formula=p.formula||'mifflin';
+  let bmr;
+  if(formula==='mifflin'){
+    bmr=sex==='male'?(10*wKg)+(6.25*hCm)-(5*age)+5:(10*wKg)+(6.25*hCm)-(5*age)-161;
+  }else if(formula==='mifflin-lean'){
+    const bf=parseFloat(p.bfPct);
+    if(!bf||bf<=0||bf>=100)return null;
+    const leanKg=wKg*(1-bf/100);
+    bmr=sex==='male'?(10*leanKg)+(6.25*hCm)-(5*age)+5:(10*leanKg)+(6.25*hCm)-(5*age)-161;
+  }else if(formula==='katch'){
+    const bf=parseFloat(p.bfPct);
+    if(!bf||bf<=0||bf>=100)return null;
+    const leanKg=wKg*(1-bf/100);
+    bmr=370+(21.6*leanKg);
+  }else if(formula==='navy'){
+    const bf=calcNavyBF();
+    if(bf===null)return null;
+    const leanKg=wKg*(1-bf/100);
+    bmr=370+(21.6*leanKg);
+  }
+  if(!bmr)return null;
   return Math.round(bmr*1.375);
 }
 function calcWorkoutCalories(exercises,durationMs){
   const wLbs=parseFloat(S.profile.weight);
-  const wKg=wLbs?wLbs*0.453592:80;
+  let wKg=wLbs?wLbs*0.453592:80;
+  const bf=getEffectiveBF();
+  if(bf!==null)wKg=wKg*(1-bf/100);
   const hours=durationMs/3600000;
   if(!hours)return null;
   if(!exercises.length)return null;
@@ -674,6 +793,11 @@ function saveProfile(){
     weight:document.getElementById('prof-weight').value,
     ft:document.getElementById('prof-ft').value,
     in:document.getElementById('prof-in').value,
+    formula:document.getElementById('prof-formula').value,
+    bfPct:document.getElementById('prof-bf').value,
+    neck:document.getElementById('prof-neck').value,
+    waist:document.getElementById('prof-waist').value,
+    hip:document.getElementById('prof-hip').value,
   };
   saveState();updateTDEEDisplay();
 }
@@ -684,13 +808,44 @@ function loadProfileInputs(){
   document.getElementById('prof-weight').value=p.weight||'';
   document.getElementById('prof-ft').value=p.ft||'';
   document.getElementById('prof-in').value=p.in||'';
+  document.getElementById('prof-formula').value=p.formula||'mifflin';
+  document.getElementById('prof-bf').value=p.bfPct||'';
+  document.getElementById('prof-neck').value=p.neck||'';
+  document.getElementById('prof-waist').value=p.waist||'';
+  document.getElementById('prof-hip').value=p.hip||'';
+  updateFormulaFields();
   updateTDEEDisplay();
 }
 function updateTDEEDisplay(){
   const tdee=calcTDEE();
   const block=document.getElementById('calorie-result-block');
-  if(tdee){document.getElementById('tdee-val').textContent=tdee.toLocaleString();block.style.display='block';}
-  else block.style.display='none';
+  if(tdee){
+    document.getElementById('tdee-val').textContent=tdee.toLocaleString();
+    block.style.display='block';
+    const formula=S.profile.formula||'mifflin';
+    const bf=getEffectiveBF();
+    const labels={
+      'mifflin':'Mifflin-St Jeor · lightly active (1.375×)',
+      'mifflin-lean':`Mifflin + Lean Mass (${bf?Math.round(bf)+'% BF':''}) · 1.375×`,
+      'katch':`Katch-McArdle (${bf?Math.round(bf)+'% BF':''}) · 1.375×`,
+      'navy':`Navy Method (${bf?Math.round(bf)+'% BF est.':''}) · Katch-McArdle · 1.375×`,
+    };
+    const lbl=document.getElementById('tdee-formula-label');
+    if(lbl)lbl.textContent=labels[formula]||labels['mifflin'];
+  }else{
+    block.style.display='none';
+  }
+}
+
+function updateFormulaFields(){
+  const formula=document.getElementById('prof-formula').value;
+  const sex=document.getElementById('prof-sex').value;
+  const bfRow=document.getElementById('bf-pct-row');
+  const navyRows=document.getElementById('navy-rows');
+  const navyHipRow=document.getElementById('navy-hip-row');
+  bfRow.style.display=(formula==='mifflin-lean'||formula==='katch')?'grid':'none';
+  navyRows.style.display=(formula==='navy')?'block':'none';
+  if(navyHipRow)navyHipRow.style.display=(formula==='navy'&&sex==='female')?'grid':'none';
 }
 
 // ══════════════════════════════════════════════
@@ -782,48 +937,107 @@ function removePlanEx(dayId,idx){
 }
 
 // ══════════════════════════════════════════════
-//  LIBRARY EDITOR
+//  LIBRARY MODAL
 // ══════════════════════════════════════════════
-let libraryOpen=false;
-function toggleLibrary(){
-  libraryOpen=!libraryOpen;
-  document.getElementById('lib-toggle-icon').innerHTML=libraryOpen?'&#9650;':'&#9660;';
-  const body=document.getElementById('library-body');
-  body.style.display=libraryOpen?'block':'none';
-  if(libraryOpen)renderLibrary();
+let libModalView='muscles';
+let libModalMuscle=null;
+
+function openLibraryModal(){
+  libModalView='muscles';
+  libModalMuscle=null;
+  document.getElementById('lib-modal-search').value='';
+  document.getElementById('lib-modal-back').classList.remove('visible');
+  document.getElementById('lib-modal-title').textContent='Exercise Library';
+  renderLibMuscleGroups('');
+  document.getElementById('lib-modal').classList.add('open');
 }
-function renderLibrary(){
+function closeLibraryModal(){
+  document.getElementById('lib-modal').classList.remove('open');
+}
+function libModalBack(){
+  libModalView='muscles';
+  libModalMuscle=null;
+  document.getElementById('lib-modal-search').value='';
+  document.getElementById('lib-modal-back').classList.remove('visible');
+  document.getElementById('lib-modal-title').textContent='Exercise Library';
+  renderLibMuscleGroups('');
+}
+function selectLibMuscle(muscle){
+  libModalView='exercises';
+  libModalMuscle=muscle;
+  document.getElementById('lib-modal-search').value='';
+  document.getElementById('lib-modal-back').classList.add('visible');
+  document.getElementById('lib-modal-title').textContent=muscle;
+  renderLibExercises(muscle,'');
+}
+function renderLibMuscleGroups(q){
+  const content=document.getElementById('lib-modal-content');
   const all=allExercises();
-  document.getElementById('library-body').innerHTML=all.map((ex,i)=>{
-    const r=resolveEx(ex);
-    return`<div class="lib-ex-item" id="lib-item-${i}">
-      <div class="lib-ex-item-top" onclick="toggleLibItem(${i})">
-        <div><div class="lib-ex-item-name">${ex.name}</div><div class="lib-ex-item-muscle">${ex.muscle}</div></div>
-        <span style="color:var(--muted);font-size:12px">&#9998;</span>
-      </div>
-      <div class="lib-ex-edit" id="lib-edit-${i}">
-        <div class="lib-edit-row">
-          <div style="flex:1"><input class="lib-edit-input" id="lib-sets-${i}" value="${r.targetSets||''}" placeholder="Sets"><div class="lib-edit-label">Sets</div></div>
-          <div style="flex:1"><input class="lib-edit-input" id="lib-reps-${i}" value="${r.targetReps||''}" placeholder="Reps"><div class="lib-edit-label">Rep Range</div></div>
-          <div style="flex:1"><input class="lib-edit-input" type="number" inputmode="decimal" id="lib-wt-${i}" value="${r.targetWeight||''}" placeholder="0"><div class="lib-edit-label">Target lbs</div></div>
-        </div>
-        <div class="lib-edit-row"><button class="lib-save-btn" onclick="saveLibItem(${i},'${ex.name.replace(/'/g,"\\'")}')">Save</button></div>
-      </div>
+  let muscles=MUSCLE_ORDER;
+  if(q.trim()){
+    // When searching on muscle screen, show flat exercise list
+    const qLow=q.toLowerCase();
+    const matches=all.filter(e=>e.name.toLowerCase().includes(qLow)||e.muscle.toLowerCase().includes(qLow));
+    matches.sort((a,b)=>a.name.localeCompare(b.name));
+    content.innerHTML=`<div class="lib-ex-list">${matches.map(ex=>buildLibExItem(ex)).join('')}</div>`;
+    if(!matches.length)content.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--muted)">No exercises found</div>`;
+    return;
+  }
+  content.innerHTML=`<div class="lib-muscle-grid">${muscles.map(m=>{
+    const count=all.filter(e=>e.muscle===m).length;
+    const icon=MUSCLE_ICONS[m]||'•';
+    return`<div class="lib-muscle-card" onclick="selectLibMuscle('${m}')">
+      <div class="lib-muscle-icon">${icon}</div>
+      <div class="lib-muscle-name">${m}</div>
+      <div class="lib-muscle-count">${count} exercise${count!==1?'s':''}</div>
     </div>`;
-  }).join('');
+  }).join('')}</div>`;
 }
-function toggleLibItem(i){
-  const edit=document.getElementById(`lib-edit-${i}`);
-  edit.classList.toggle('open');
-  if(edit.classList.contains('open'))scrollToCenter(edit);
+function renderLibExercises(muscle,q){
+  const content=document.getElementById('lib-modal-content');
+  let exs=allExercises().filter(e=>e.muscle===muscle);
+  if(q.trim())exs=exs.filter(e=>e.name.toLowerCase().includes(q.toLowerCase()));
+  exs.sort((a,b)=>a.name.localeCompare(b.name));
+  if(!exs.length){content.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--muted)">No exercises found</div>`;return;}
+  content.innerHTML=`<div class="lib-ex-list">${exs.map(ex=>buildLibExItem(ex)).join('')}</div>`;
 }
-function saveLibItem(i,name){
-  const sets=document.getElementById(`lib-sets-${i}`).value.trim();
-  const reps=document.getElementById(`lib-reps-${i}`).value.trim();
-  const wt=document.getElementById(`lib-wt-${i}`).value;
+function buildLibExItem(ex){
+  const r=resolveEx(ex);
+  const key=btoa(unescape(encodeURIComponent(ex.name))).replace(/[^a-zA-Z0-9]/g,'');
+  const escapedName=ex.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return`<div class="lib-ex-item">
+    <div class="lib-ex-item-top" onclick="toggleLibItemByKey('${key}')">
+      <div><div class="lib-ex-item-name">${ex.name}</div><div class="lib-ex-item-muscle">${ex.muscle}</div></div>
+      <span style="color:var(--muted);font-size:12px">&#9998;</span>
+    </div>
+    <div class="lib-ex-edit" id="lib-edit-${key}">
+      <div class="lib-edit-row">
+        <div style="flex:1"><input class="lib-edit-input" id="lib-sets-${key}" value="${r.targetSets||''}" placeholder="Sets"><div class="lib-edit-label">Sets</div></div>
+        <div style="flex:1"><input class="lib-edit-input" id="lib-reps-${key}" value="${r.targetReps||''}" placeholder="Reps"><div class="lib-edit-label">Rep Range</div></div>
+        <div style="flex:1"><input class="lib-edit-input" type="number" inputmode="decimal" id="lib-wt-${key}" value="${r.targetWeight||''}" placeholder="0"><div class="lib-edit-label">Target lbs</div></div>
+      </div>
+      <div class="lib-edit-row"><button class="lib-save-btn" onclick="saveLibItemByKey('${key}','${escapedName}')">Save</button></div>
+    </div>
+  </div>`;
+}
+function toggleLibItemByKey(key){
+  const edit=document.getElementById(`lib-edit-${key}`);
+  if(edit)edit.classList.toggle('open');
+}
+function saveLibItemByKey(key,name){
+  const sets=document.getElementById(`lib-sets-${key}`).value.trim();
+  const reps=document.getElementById(`lib-reps-${key}`).value.trim();
+  const wt=document.getElementById(`lib-wt-${key}`).value;
   S.exerciseOverrides[name]={targetSets:sets,targetReps:reps,targetWeight:parseFloat(wt)||0};
   saveState();showToast(`Saved: ${name}`,false);
-  document.getElementById(`lib-edit-${i}`).classList.remove('open');
+  document.getElementById(`lib-edit-${key}`).classList.remove('open');
+}
+function filterLibrarySearch(q){
+  if(libModalView==='muscles'){
+    renderLibMuscleGroups(q);
+  }else{
+    renderLibExercises(libModalMuscle,q);
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1358,7 +1572,7 @@ function importData(input){
 function clearAllData(){
   if(!confirm('Clear ALL data? This cannot be undone.'))return;
   S.workouts=[];S.prs={};S.customExercises=[];S.currentSession=null;S.exerciseOverrides={};
-  S.profile={age:'',sex:'',weight:'',ft:'',in:''};
+  S.profile={age:'',sex:'',weight:'',ft:'',in:'',formula:'mifflin',bfPct:'',neck:'',waist:'',hip:''};
   S.dayPlans=JSON.parse(JSON.stringify(DEFAULT_DAY_PLANS));
   saveState();stopTimer();
   document.getElementById('log-active').style.display='none';
