@@ -2139,7 +2139,7 @@ function switchPage(id,btn){
   document.getElementById('page-container').scrollTop=0;
   if(id==='records')renderRecords();
   if(id==='history')renderHistory();
-  if(id==='settings'){renderSwatches();renderCustomExList();loadProfileInputs();}
+  if(id==='settings'){updateThemeBadges();renderCustomExList();loadProfileInputs();}
 }
 
 // ══════════════════════════════════════════════
@@ -2164,6 +2164,27 @@ if(S.currentSession){
   document.getElementById('log-active').style.display='block';
   renderActiveSession();startTimer();
 }
+</script>
+
+<script type="module">
+// ══════════════════════════════════════════════
+//  FIREBASE
+// ══════════════════════════════════════════════
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4p9ladsBpr4CoMPnysQbDNcWMiUR5onc",
+  authDomain: "ironlog-41457.firebaseapp.com",
+  projectId: "ironlog-41457",
+  storageBucket: "ironlog-41457.firebasestorage.app",
+  messagingSenderId: "1049172749246",
+  appId: "1:1049172749246:web:71289c76d1e1fba8d167ef",
+  measurementId: "G-X5XWMP8T41"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 </script>
 </body>
 </html>
