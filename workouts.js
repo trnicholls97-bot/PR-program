@@ -10,7 +10,7 @@
 // Higher = more calories per minute of session time.
 
 const DEFAULT_DAY_PLANS = {
-  chest:     ['Barbell Bench Press','Incline Dumbbell Bench Press','Machine Pectoral Fly','Triceps Pushdown (machine)','Tricep Pushdown (cable)','Decline Sit-ups','Cardio'],
+  chest:     ['Barbell Bench Press','Incline Dumbbell Bench Press','Machine Pectoral Fly','Triceps Pushdown (machine)','Tricep Pushdown (bar)','Decline Sit-ups','Cardio'],
   back:      ['Landmine Rows','Seated/Low Row','Assisted Pullups','Pulldowns','Standing Bicep Curls','Decline Sit-ups','Cardio'],
   shoulders: ['Overhead Barbell Press','Single-Arm Rear Delt Flys','Dumbbell Lateral Raises','Cable Lateral Raises','Cardio'],
   legs:      ['Hack Squat','Leg Press','Quad Extensions (machine)','Laying Hamstring Curls (machine)','Glute/Back Extensions or Hip Thrusts','Decline Sit-ups','Cardio'],
@@ -129,7 +129,7 @@ const EXERCISE_LIB = [
 
 // ── TRICEPS ─────────────────────────────────────
   {name:'Triceps Pushdown (machine)',       muscle:'Triceps',     met:3.5, targetSets:'4',                     targetReps:'10-15',  targetWeight:0},
-  {name:'Tricep Pushdown (cable)',          muscle:'Triceps',     met:3.5, targetSets:'4',                     targetReps:'10-15',  targetWeight:0},
+  {name:'Tricep Pushdown (bar)',            muscle:'Triceps',     met:3.5, targetSets:'4',                     targetReps:'10-15',  targetWeight:0},
   {name:'Tricep Pushdown (rope)',           muscle:'Triceps',     met:3.5, targetSets:'3',                     targetReps:'12-15',  targetWeight:0},
   {name:'Overhead Tricep Extension (cable)',muscle:'Triceps',     met:3.5, targetSets:'3',                     targetReps:'12-15',  targetWeight:0},
   {name:'Overhead Tricep Extension (DB)',   muscle:'Triceps',     met:3.5, targetSets:'3',                     targetReps:'10-12',  targetWeight:0},
@@ -143,29 +143,24 @@ const EXERCISE_LIB = [
 // estimates for weighted/controlled movements.
   {name:'Decline Sit-ups',                  muscle:'Core',        met:4.0, targetSets:'5',                     targetReps:'15-20',  targetWeight:0},
   {name:'Cable Crunch',                     muscle:'Core',        met:4.0, targetSets:'4',                     targetReps:'15-20',  targetWeight:0},
+  {name:'Machine Crunch',                   muscle:'Core',        met:4.0, targetSets:'4',                     targetReps:'12-15',  targetWeight:0},
   {name:'Hanging Leg Raise',               muscle:'Core',        met:4.5, targetSets:'4',                     targetReps:'10-15',  targetWeight:0},
   {name:'Ab Wheel Rollout',                muscle:'Core',        met:4.5, targetSets:'3',                     targetReps:'8-12',   targetWeight:0},
   {name:'Plank',                            muscle:'Core',        met:3.5, targetSets:'3',                     targetReps:'45-60s', targetWeight:0},
   {name:'Side Plank',                       muscle:'Core',        met:3.5, targetSets:'3',                     targetReps:'30-45s', targetWeight:0},
   {name:'Russian Twists',                   muscle:'Core',        met:4.0, targetSets:'3',                     targetReps:'20-30',  targetWeight:0},
   {name:'Landmine Twists',                  muscle:'Core',        met:4.5, targetSets:'3',                     targetReps:'12-15',  targetWeight:0},
+  {name:'Torso Rotation',                   muscle:'Core',        met:4.0, targetSets:'3',                     targetReps:'12-15',  targetWeight:0},
   {name:'Sit-ups',                          muscle:'Core',        met:3.5, targetSets:'4',                     targetReps:'15-25',  targetWeight:0},
 
 // ── CARDIO ──────────────────────────────────────
-// MET values here are rough session averages
-// including warmup and cooldown; steady-state
-// cardio during a strength session sits ~6-8.
+// Cardio exercises track time, speed, and resistance instead of weight/reps.
+// MET values are rough session averages including warmup and cooldown.
   {name:'Cardio',                           muscle:'Cardio',      met:7.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
-  {name:'Treadmill (walking)',              muscle:'Cardio',      met:4.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
-  {name:'Treadmill (jogging)',              muscle:'Cardio',      met:7.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
-  {name:'Treadmill (running)',              muscle:'Cardio',      met:9.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
-  {name:'Treadmill (incline walk)',         muscle:'Cardio',      met:5.5, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
-  {name:'Stationary Bike (moderate)',       muscle:'Cardio',      met:6.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
-  {name:'Stationary Bike (vigorous)',       muscle:'Cardio',      met:8.5, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
-  {name:'Rowing Machine (moderate)',        muscle:'Cardio',      met:7.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
-  {name:'Rowing Machine (vigorous)',        muscle:'Cardio',      met:8.5, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
-  {name:'Elliptical (moderate)',            muscle:'Cardio',      met:5.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
-  {name:'Elliptical (vigorous)',            muscle:'Cardio',      met:7.5, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
+  {name:'Treadmill',                        muscle:'Cardio',      met:7.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
+  {name:'Stationary Bike',                  muscle:'Cardio',      met:7.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
+  {name:'Rowing Machine',                   muscle:'Cardio',      met:7.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
+  {name:'Elliptical',                       muscle:'Cardio',      met:6.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
   {name:'Stair Climber',                    muscle:'Cardio',      met:8.0, targetSets:'1',                     targetReps:'20 min', targetWeight:0},
   {name:'Battle Ropes',                     muscle:'Cardio',      met:9.0, targetSets:'5',                     targetReps:'30s',    targetWeight:0},
   {name:'Jump Rope',                        muscle:'Cardio',      met:9.0, targetSets:'5',                     targetReps:'2 min',  targetWeight:0},
@@ -176,3 +171,28 @@ const MUSCLE_ORDER  = ['Chest','Back','Shoulders','Quads','Hamstrings','Glutes',
 const MUSCLE_ICONS  = {Chest:'💪',Back:'🏋️',Shoulders:'🔱',Quads:'🦵',Hamstrings:'🦵',Glutes:'🍑',Calves:'🦵',Biceps:'💪',Triceps:'💪',Core:'🔥',Cardio:'🏃',Misc:'⚡'};
 // MET_BY_MUSCLE kept as fallback for custom exercises added by user
 const MET_BY_MUSCLE = {Chest:5,Back:5.5,Shoulders:4.5,Quads:6,Hamstrings:5.5,Glutes:5.5,Calves:3,Biceps:3.5,Triceps:3.5,Core:4,Cardio:7,Misc:4.5};
+
+// Cardio exercises track time/speed/resistance instead of weight/reps
+const CARDIO_EXERCISES = new Set(['Cardio','Treadmill','Stationary Bike','Rowing Machine','Elliptical','Stair Climber','Battle Ropes','Jump Rope','HIIT (general)']);
+
+// Variation options for exercises with multiple grip/style variants
+const EXERCISE_VARIATIONS = {
+  'Pull-ups':              ['Standard','Wide Grip','Close Grip','Hammer Grip'],
+  'Assisted Pullups':      ['Standard','Wide Grip','Chin-Up','Hammer Grip'],
+  'Pulldowns':             ['Wide Grip','Close Grip','Reverse Grip','Single Arm'],
+  'Pulldowns (close grip)':['Close Grip','Wide Grip','Underhand'],
+  'Chin-ups':              ['Standard','Wide Grip','Close Grip'],
+  'Barbell Bench Press':   ['Standard','Wide Grip','Close Grip'],
+  'Barbell Curl':          ['Standard','Wide Grip','Close Grip'],
+  'Standing Bicep Curls':  ['Standard','Wide Grip','Close Grip','Hammer'],
+  'Dumbbell Curl':         ['Standard','Supinating','Hammer'],
+  'Cable Curl':            ['Standard','Rope','Bar','Single Arm'],
+  'Seated/Low Row':        ['Narrow Grip','Wide Grip','Overhand'],
+  'Cable Row (wide grip)': ['Wide Grip','Narrow Grip','Single Arm'],
+  'Overhead Barbell Press':['Standard','Behind Neck','Seated'],
+  'Tricep Pushdown (bar)': ['Bar','Rope','V-Bar','Single Arm'],
+  'Tricep Pushdown (rope)':['Rope','Bar','V-Bar'],
+  'Leg Press':             ['Standard','Narrow Stance','Wide Stance','Single Leg'],
+  'Hip Thrusts (barbell)': ['Standard','Single Leg','Banded'],
+  'Glute/Back Extensions': ['Standard','Weighted','Single Leg'],
+};

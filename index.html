@@ -35,7 +35,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .status-pad{height:calc(48px + var(--st))}
 /* HEADERS */
 .page-head{padding:0 20px 16px}
-.page-head-title{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:800;letter-spacing:.02em;line-height:1;text-transform:uppercase}
+.page-head-title{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:800;letter-spacing:.02em;line-height:1;text-transform:uppercase;color:var(--text-head,var(--text))}
 .page-head-sub{font-size:12px;color:var(--muted2);margin-top:3px}
 .section-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0 20px;margin-bottom:8px;margin-top:20px}
 /* DAY GRID */
@@ -57,16 +57,20 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .cal-banner-sub{font-size:10px;color:var(--muted);margin-top:2px}
 /* WORKOUT */
 .workout-view{padding:0 20px}
-.timer-bar{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.timer-bar{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .timer-display{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:700;letter-spacing:.04em;color:var(--accent);line-height:1}
 .timer-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
-.timer-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--red);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;padding:10px 18px;cursor:pointer;transition:all .15s}
+.timer-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--green);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;padding:10px 18px;cursor:pointer;transition:all .15s;white-space:nowrap}
 .timer-btn:active{background:var(--surface3)}
+.timer-cancel-btn{background:none;border:none;color:var(--red);font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;cursor:pointer;padding:6px 0;white-space:nowrap}
+.timer-center{flex:1;text-align:center}
+.rest-display{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;letter-spacing:.04em;color:var(--muted2);line-height:1;transition:color .3s}
+.rest-display.active{color:var(--text)}
 .back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--accent);font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;cursor:pointer;padding:0 20px 14px}
 /* EXERCISE BLOCKS */
 .exercise-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px}
 .ex-header{display:flex;align-items:flex-start;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--border)}
-.ex-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:.02em}
+.ex-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:.02em;color:var(--text-head,var(--text))}
 .ex-meta{font-size:11px;color:var(--muted2);margin-top:1px}
 .ex-ts{font-size:10px;color:var(--muted);margin-top:2px}
 .ex-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:8px}
@@ -101,6 +105,11 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .add-set-btn:active{background:var(--accent-dim)}
 .add-ex-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:14px;background:var(--surface);border:1px dashed var(--border);color:var(--accent);font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;transition:all .15s}
 .add-ex-btn:active{background:var(--accent-dim);border-color:var(--accent-border)}
+/* VARIATION SELECT */
+.variation-select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--muted2);font-family:'Barlow',sans-serif;font-size:11px;padding:3px 6px;outline:none;cursor:pointer;margin-top:3px;max-width:160px}
+/* CARDIO SET ROW */
+.set-row.cardio-row{grid-template-columns:28px 1fr 1fr 1fr 38px}
+.cardio-label{font-size:9px;color:var(--muted);text-align:center;margin-top:2px;letter-spacing:.04em;text-transform:uppercase}
 /* RECORDS */
 .muscle-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer}
 .muscle-header-left{display:flex;align-items:center;gap:10px}
@@ -278,7 +287,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .lib-modal-overlay.open{transform:translateX(0)}
 .lib-modal-header{display:flex;align-items:center;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid var(--border);flex-shrink:0;gap:4px;background:var(--bg)}
 .lib-modal-back-btn{background:none;border:none;color:var(--accent);font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;cursor:pointer;padding:6px 10px 6px 0;border-radius:8px;display:flex;align-items:center;gap:2px;flex-shrink:0;white-space:nowrap}
-.lib-modal-title{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+.lib-modal-title{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--text-head,var(--text))}
 .lib-modal-content{flex:1;overflow-y:auto;scrollbar-width:none}
 .lib-modal-content::-webkit-scrollbar{display:none}
 .lib-modal-search-bar{padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--bg);flex-shrink:0}
@@ -325,6 +334,23 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 #records-scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior:none;min-height:0}
 #records-scroll-body::-webkit-scrollbar{display:none}
 .records-search-bar{flex-shrink:0;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--bg)}
+.records-sticky-header{position:sticky;top:0;z-index:10;background:var(--bg);padding:0 20px 14px;display:flex;align-items:center;gap:8px}
+/* LIBRARY RENAME */
+.lib-ex-rename-bar{padding:8px 14px 12px;border-top:1px solid var(--border);display:none;align-items:center;gap:8px}
+.lib-ex-rename-bar.open{display:flex}
+.lib-ex-rename-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:8px 10px;outline:none;-webkit-appearance:none;transition:border-color .15s}
+.lib-ex-rename-input:focus{border-color:var(--accent)}
+/* THEME MODAL */
+.theme-color-row{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.theme-color-row:last-child{border-bottom:none}
+.theme-color-preview{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.15);flex-shrink:0}
+.theme-color-expand{padding:12px 16px 16px;border-bottom:1px solid var(--border);display:none}
+.theme-color-expand.open{display:block}
+.theme-section-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.theme-swatch-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.theme-hex-row{display:flex;gap:8px;align-items:center}
+.theme-hex-preview{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);flex-shrink:0}
+.theme-active-badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:6px;padding:3px 7px}
 </style>
 </head>
 <body>
@@ -468,20 +494,28 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
     </div>
    </div>
 
-   <!-- ACCENT COLOR -->
-   <div class="section-label">Accent Color</div>
+   <!-- THEMES -->
+   <div class="section-label">Themes</div>
    <div class="settings-group">
-    <div class="settings-row" style="flex-wrap:wrap;gap:8px">
+    <div class="settings-row" style="cursor:pointer" onclick="openThemeModal('dark')">
      <div>
-      <div class="settings-row-label">Theme Color</div>
-      <div class="settings-row-sub">Tap a swatch or enter a hex code</div>
+      <div class="settings-row-label">Dark Theme</div>
+      <div class="settings-row-sub">iOS-style dark appearance</div>
      </div>
-     <div class="color-swatches" id="color-swatches"></div>
+     <div style="display:flex;align-items:center;gap:8px">
+      <span class="theme-active-badge" id="dark-active-badge" style="display:none">Active</span>
+      <span style="color:var(--accent)">&#8250;</span>
+     </div>
     </div>
-    <div class="hex-input-row">
-     <div class="hex-preview" id="hex-preview"></div>
-     <input class="hex-input" id="hex-input" placeholder="#ff6b35" maxlength="7" oninput="onHexInput(this.value)">
-     <button class="hex-apply-btn" onclick="applyHexInput()">Apply</button>
+    <div class="settings-row" style="cursor:pointer" onclick="openThemeModal('light')">
+     <div>
+      <div class="settings-row-label">Light Theme</div>
+      <div class="settings-row-sub">iOS-style light appearance</div>
+     </div>
+     <div style="display:flex;align-items:center;gap:8px">
+      <span class="theme-active-badge" id="light-active-badge" style="display:none">Active</span>
+      <span style="color:var(--accent)">&#8250;</span>
+     </div>
     </div>
    </div>
 
@@ -627,6 +661,19 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
  </div>
 </div>
 
+<!-- THEME MODAL -->
+<div class="lib-modal-overlay" id="theme-modal">
+ <div class="lib-modal-header">
+  <button class="lib-modal-back-btn" id="theme-modal-back" onclick="closeThemeModal()">
+   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+   Back
+  </button>
+  <div class="lib-modal-title" id="theme-modal-title">Dark Theme</div>
+  <button class="theme-active-btn" id="theme-modal-activate-btn" onclick="activateCurrentTheme()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;font-weight:700;padding:6px 12px;cursor:pointer;flex-shrink:0">Use Theme</button>
+ </div>
+ <div class="lib-modal-content" id="theme-modal-content"></div>
+</div>
+
 <!-- PLANS MODAL -->
 <div class="lib-modal-overlay" id="plans-modal">
  <div class="lib-modal-header">
@@ -688,7 +735,14 @@ let S={
   currentSession:null,
   workouts:[],
   prs:{},
+  cardioPrs:{},
   customExercises:[],
+  themes:{
+    active:'dark',
+    dark:{bg:'#0d0d0d',surface:'#181818',textBody:'#f2f2f2',textHead:'#ffffff',accent:'#ff6b35'},
+    light:{bg:'#f2f2f7',surface:'#ffffff',textBody:'#1c1c1e',textHead:'#000000',accent:'#007aff'},
+  },
+  exerciseNameOverrides:{},
 };
 
 function loadState(){
@@ -700,6 +754,8 @@ function saveState(){try{localStorage.setItem('ironlog_v6',JSON.stringify(S));}c
 //  TIMER
 // ══════════════════════════════════════════════
 let timerInterval=null;
+let restTimerInterval=null;
+let restTimerStart=0;
 function startTimer(){
   if(timerInterval)return;
   timerInterval=setInterval(()=>{
@@ -710,7 +766,24 @@ function startTimer(){
     el.textContent=h>0?`${h}:${pad(m)}:${pad(s)}`:`${pad(m)}:${pad(s)}`;
   },1000);
 }
-function stopTimer(){clearInterval(timerInterval);timerInterval=null;}
+function stopTimer(){clearInterval(timerInterval);timerInterval=null;stopRestTimer();}
+function startRestTimer(){
+  restTimerStart=Date.now();
+  if(restTimerInterval)return;
+  restTimerInterval=setInterval(()=>{
+    const el=document.getElementById('rest-display');if(!el)return;
+    const sec=Math.floor((Date.now()-restTimerStart)/1000);
+    const m=Math.floor(sec/60),s=sec%60;
+    el.textContent=`${pad(m)}:${pad(s)}`;
+    el.classList.add('active');
+  },1000);
+}
+function stopRestTimer(){clearInterval(restTimerInterval);restTimerInterval=null;}
+function resetRestTimer(){
+  restTimerStart=Date.now();
+  const el=document.getElementById('rest-display');
+  if(el){el.textContent='00:00';el.classList.add('active');}
+}
 function pad(n){return String(n).padStart(2,'0');}
 
 // ══════════════════════════════════════════════
@@ -902,33 +975,148 @@ function updateFormulaFields(){
 }
 
 // ══════════════════════════════════════════════
-//  ACCENT COLOR
+//  THEME SYSTEM
 // ══════════════════════════════════════════════
-function applyAccent(hex){
-  S.accentColor=hex;
-  document.documentElement.style.setProperty('--accent',hex);
-  document.documentElement.style.setProperty('--accent-dim',hex+'1a');
-  document.documentElement.style.setProperty('--accent-border',hex+'4d');
+const THEME_DEFAULTS={
+  dark:{bg:'#0d0d0d',surface:'#181818',textBody:'#f2f2f2',textHead:'#ffffff',accent:'#ff6b35'},
+  light:{bg:'#f2f2f7',surface:'#ffffff',textBody:'#1c1c1e',textHead:'#000000',accent:'#007aff'},
+};
+const THEME_COLOR_PRESETS={
+  accent:['#ff6b35','#00d4ff','#b8ff3a','#a855f7','#f43f8e','#007aff','#34c759','#ff9f0a'],
+  bg:['#0d0d0d','#1a1a1a','#000000','#f2f2f7','#ffffff','#1c1c1e'],
+  surface:['#181818','#222222','#2c2c2c','#ffffff','#f2f2f7','#e5e5ea'],
+  textBody:['#f2f2f2','#ffffff','#cccccc','#1c1c1e','#000000','#3c3c43'],
+  textHead:['#ffffff','#f2f2f2','#000000','#1c1c1e'],
+};
+const THEME_COLOR_LABELS={bg:'Background',surface:'Widgets',textBody:'Body Text',textHead:'Header Text',accent:'Accent'};
+let themeModalMode='dark'; // 'dark' | 'light'
+let themeExpandedKey=null;
+
+function getTheme(mode){
+  if(!S.themes)S.themes={active:'dark',dark:{...THEME_DEFAULTS.dark},light:{...THEME_DEFAULTS.light}};
+  if(!S.themes[mode])S.themes[mode]={...THEME_DEFAULTS[mode]};
+  return S.themes[mode];
+}
+function applyTheme(mode){
+  if(!S.themes)S.themes={active:'dark',dark:{...THEME_DEFAULTS.dark},light:{...THEME_DEFAULTS.light}};
+  S.themes.active=mode;
+  const t=getTheme(mode);
+  const r=document.documentElement.style;
+  r.setProperty('--bg',t.bg);
+  // Derive surface variants
+  r.setProperty('--surface',t.surface);
+  r.setProperty('--surface2',blendColor(t.surface,t.bg,.4));
+  r.setProperty('--surface3',blendColor(t.surface,t.bg,.7));
+  r.setProperty('--text',t.textBody);
+  r.setProperty('--text-head',t.textHead);
+  r.setProperty('--accent',t.accent);
+  r.setProperty('--accent-dim',t.accent+'1a');
+  r.setProperty('--accent-border',t.accent+'4d');
+  // Derive border & muted from bg/surface
+  const dark=isDarkColor(t.bg);
+  r.setProperty('--border',dark?'#2e2e2e':'#d1d1d6');
+  r.setProperty('--muted',dark?'#5a5a5a':'#8e8e93');
+  r.setProperty('--muted2',dark?'#888888':'#6c6c70');
+  S.accentColor=t.accent;
   saveState();
+  updateThemeBadges();
 }
-function renderSwatches(){
-  document.getElementById('color-swatches').innerHTML=ACCENT_PRESETS.map(c=>
-    `<div class="swatch${c.hex===S.accentColor?' selected':''}" style="background:${c.hex}" onclick="applyAccent('${c.hex}');renderSwatches()" title="${c.name}"></div>`
-  ).join('');
-  const hi=document.getElementById('hex-input');
-  if(hi)hi.value=S.accentColor;
-  updateHexPreview(S.accentColor);
+function blendColor(c1,c2,t){
+  const parse=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+  try{
+    const a=parse(c1),b=parse(c2);
+    const r=Math.round(a[0]*(1-t)+b[0]*t);
+    const g=Math.round(a[1]*(1-t)+b[1]*t);
+    const bl=Math.round(a[2]*(1-t)+b[2]*t);
+    return`#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${bl.toString(16).padStart(2,'0')}`;
+  }catch(e){return c1;}
 }
-function onHexInput(val){
-  if(/^#[0-9a-fA-F]{6}$/.test(val))updateHexPreview(val);
+function isDarkColor(hex){
+  try{
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return(r*299+g*587+b*114)/1000<128;
+  }catch(e){return true;}
 }
-function updateHexPreview(hex){
-  const p=document.getElementById('hex-preview');if(p)p.style.background=hex;
+function updateThemeBadges(){
+  const active=S.themes&&S.themes.active;
+  const db=document.getElementById('dark-active-badge');
+  const lb=document.getElementById('light-active-badge');
+  if(db)db.style.display=active==='dark'?'':'none';
+  if(lb)lb.style.display=active==='light'?'':'none';
 }
-function applyHexInput(){
-  const val=document.getElementById('hex-input').value.trim();
-  if(!/^#[0-9a-fA-F]{6}$/.test(val)){showToast('Enter a valid hex code like #ff6b35',false);return;}
-  applyAccent(val);renderSwatches();
+function openThemeModal(mode){
+  themeModalMode=mode;themeExpandedKey=null;
+  document.getElementById('theme-modal-title').textContent=mode==='dark'?'Dark Theme':'Light Theme';
+  const activateBtn=document.getElementById('theme-modal-activate-btn');
+  if(activateBtn){
+    const isActive=S.themes&&S.themes.active===mode;
+    activateBtn.textContent=isActive?'Active ✓':'Use Theme';
+    activateBtn.style.color=isActive?'var(--accent)':'var(--text)';
+  }
+  renderThemeModalContent();
+  document.getElementById('theme-modal').classList.add('open');
+}
+function closeThemeModal(){
+  document.getElementById('theme-modal').classList.remove('open');
+  updateThemeBadges();
+}
+function activateCurrentTheme(){
+  applyTheme(themeModalMode);
+  const btn=document.getElementById('theme-modal-activate-btn');
+  if(btn){btn.textContent='Active ✓';btn.style.color='var(--accent)';}
+  renderThemeModalContent();
+}
+function renderThemeModalContent(){
+  const t=getTheme(themeModalMode);
+  const content=document.getElementById('theme-modal-content');
+  content.innerHTML=`<div class="settings-group" style="margin:16px">
+    ${Object.entries(THEME_COLOR_LABELS).map(([key,label])=>{
+      const color=t[key]||'#888888';
+      const isOpen=themeExpandedKey===key;
+      const presets=(THEME_COLOR_PRESETS[key]||[]);
+      const swatches=presets.map(p=>`<div class="swatch${p===color?' selected':''}" style="background:${p}" onclick="setThemeColor('${key}','${p}')"></div>`).join('');
+      return`<div>
+        <div class="theme-color-row" onclick="toggleThemeColorExpand('${key}')">
+          <div class="settings-row-label">${label}</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="theme-color-preview" style="background:${color}"></div>
+            <span style="color:var(--muted);font-size:12px">${color}</span>
+            <span style="color:var(--muted);font-size:12px">${isOpen?'▲':'▼'}</span>
+          </div>
+        </div>
+        <div class="theme-color-expand${isOpen?' open':''}">
+          <div class="theme-section-label">Presets</div>
+          <div class="theme-swatch-row color-swatches">${swatches}</div>
+          <div class="theme-section-label">Custom</div>
+          <div class="theme-hex-row">
+            <div class="theme-hex-preview" id="thp-${key}" style="background:${color}"></div>
+            <input class="hex-input" id="thi-${key}" value="${color}" maxlength="7" placeholder="#000000" oninput="onThemeHexInput('${key}',this.value)">
+            <button class="hex-apply-btn" onclick="applyThemeHexInput('${key}')">Apply</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function toggleThemeColorExpand(key){
+  themeExpandedKey=themeExpandedKey===key?null:key;
+  renderThemeModalContent();
+}
+function setThemeColor(key,hex){
+  const t=getTheme(themeModalMode);
+  t[key]=hex;
+  if(S.themes.active===themeModalMode)applyTheme(themeModalMode);
+  else saveState();
+  renderThemeModalContent();
+}
+function onThemeHexInput(key,val){
+  const el=document.getElementById(`thp-${key}`);
+  if(el&&/^#[0-9a-fA-F]{6}$/.test(val))el.style.background=val;
+}
+function applyThemeHexInput(key){
+  const val=(document.getElementById(`thi-${key}`)?.value||'').trim();
+  if(!/^#[0-9a-fA-F]{6}$/.test(val)){showToast('Enter a valid hex like #ff6b35',false);return;}
+  setThemeColor(key,val);
 }
 
 // ══════════════════════════════════════════════
@@ -1221,10 +1409,22 @@ function buildLibExItem(ex){
   const r=resolveEx(ex);
   const key=btoa(unescape(encodeURIComponent(ex.name))).replace(/[^a-zA-Z0-9]/g,'');
   const escapedName=ex.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const displayName=(S.exerciseNameOverrides&&S.exerciseNameOverrides[ex.name])||ex.name;
   return`<div class="lib-ex-item">
     <div class="lib-ex-item-top" onclick="toggleLibItemByKey('${key}')">
-      <div><div class="lib-ex-item-name">${ex.name}</div><div class="lib-ex-item-muscle">${ex.muscle}</div></div>
+      <div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="lib-ex-item-name">${displayName}</div>
+          <button style="background:none;border:none;color:var(--muted2);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0" onclick="event.stopPropagation();toggleLibRename('${key}')" title="Rename">&#8943;</button>
+        </div>
+        <div class="lib-ex-item-muscle">${ex.muscle}</div>
+      </div>
       <span style="color:var(--muted);font-size:12px">&#9998;</span>
+    </div>
+    <div class="lib-ex-rename-bar" id="lib-rename-${key}">
+      <input class="lib-ex-rename-input" id="lib-rename-input-${key}" value="${displayName}" placeholder="${ex.name}" autocomplete="off">
+      <button class="lib-save-btn" style="flex-shrink:0" onclick="saveLibRename('${key}','${escapedName}')">Save</button>
+      <button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px" onclick="toggleLibRename('${key}')">&#10005;</button>
     </div>
     <div class="lib-ex-edit" id="lib-edit-${key}">
       <div class="lib-edit-row">
@@ -1239,6 +1439,29 @@ function buildLibExItem(ex){
 function toggleLibItemByKey(key){
   const edit=document.getElementById(`lib-edit-${key}`);
   if(edit)edit.classList.toggle('open');
+}
+function toggleLibRename(key){
+  const bar=document.getElementById(`lib-rename-${key}`);
+  if(bar){
+    bar.classList.toggle('open');
+    if(bar.classList.contains('open'))setTimeout(()=>document.getElementById(`lib-rename-input-${key}`)?.focus(),100);
+  }
+}
+function saveLibRename(key,originalName){
+  const inp=document.getElementById(`lib-rename-input-${key}`);
+  if(!inp)return;
+  const newName=inp.value.trim();
+  if(!newName){showToast('Name cannot be empty',false);return;}
+  if(!S.exerciseNameOverrides)S.exerciseNameOverrides={};
+  if(newName===originalName){delete S.exerciseNameOverrides[originalName];}
+  else{S.exerciseNameOverrides[originalName]=newName;}
+  saveState();
+  showToast('Name saved',false);
+  const bar=document.getElementById(`lib-rename-${key}`);
+  if(bar)bar.classList.remove('open');
+  // Update displayed name inline
+  const nameEl=document.querySelector(`#lib-rename-${key}`)?.closest('.lib-ex-item')?.querySelector('.lib-ex-item-name');
+  if(nameEl)nameEl.textContent=newName;
 }
 function saveLibItemByKey(key,name){
   const sets=document.getElementById(`lib-sets-${key}`).value.trim();
@@ -1294,14 +1517,19 @@ function renderActiveSession(){
     </button>
     <div class="workout-view">
       <div class="timer-bar">
-        <div><div class="timer-display" id="timer-display">00:00</div><div class="timer-label">Elapsed Time</div></div>
-        <button class="timer-btn" onclick="finishWorkout()">Finish Workout</button>
+        <div><div class="timer-display" id="timer-display">00:00</div><div class="timer-label">Elapsed</div></div>
+        <div class="timer-center"><div class="rest-display" id="rest-display">00:00</div><div class="timer-label">Rest</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <button class="timer-btn" onclick="finishWorkout()">Finish Workout</button>
+          <button class="timer-cancel-btn" onclick="cancelWorkout()">Cancel Workout</button>
+        </div>
       </div>
       <div id="session-exercises"></div>
       <button class="add-ex-btn" onclick="openAddExercise()"><span style="font-size:18px">+</span> Add Exercise</button>
       <div style="height:10px"></div>
     </div>`;
   renderSessionExercises();
+  startRestTimer();
 }
 
 function renderSessionExercises(){
@@ -1314,13 +1542,22 @@ function buildExBlock(ex,ei){
   const block=document.createElement('div');
   block.className='exercise-block';block.id=`ex-block-${ei}`;
   const resolved=resolveEx(ex);
-  const hasPR=ex.sets.some(s=>!s.warmup&&isPR(ex.name,s.weight,s.reps));
+  const isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
+  const hasPR=!isCardio&&ex.sets.some(s=>!s.warmup&&isPR(ex.name,s.weight,s.reps));
   const targetWt=resolved.targetWeight?` <span style="color:var(--accent)">&#8594; ${resolved.targetWeight}lbs</span>`:'';
+  const displayName=(S.exerciseNameOverrides&&S.exerciseNameOverrides[ex.name])||ex.name;
+  const variations=typeof EXERCISE_VARIATIONS!=='undefined'?EXERCISE_VARIATIONS[ex.name]:null;
+  const variationSel=variations
+    ?`<select class="variation-select" onchange="setExVariation(${ei},this.value)">
+        ${variations.map(v=>`<option value="${v}"${ex.variation===v?' selected':''}>${v}</option>`).join('')}
+      </select>`
+    :'';
   block.innerHTML=`
     <div class="ex-header">
       <div style="min-width:0;flex:1">
-        <div class="ex-name">${ex.name}</div>
-        <div class="ex-meta">${ex.muscle} &middot; ${resolved.targetSets} sets &middot; ${resolved.targetReps}${targetWt}</div>
+        <div class="ex-name">${displayName}</div>
+        ${variationSel}
+        <div class="ex-meta">${ex.muscle}${!isCardio?` &middot; ${resolved.targetSets} sets &middot; ${resolved.targetReps}${targetWt}`:''}</div>
         <div class="ex-ts">Added ${timeStr(ex.timestamp)}</div>
       </div>
       <div class="ex-actions">
@@ -1336,8 +1573,11 @@ function buildExBlock(ex,ei){
     <div id="sets-${ei}"></div>
     <button class="add-set-btn" onclick="addSet(${ei})">+ Add Set</button>`;
   const sc=block.querySelector(`#sets-${ei}`);
-  ex.sets.forEach((s,si)=>sc.appendChild(buildSetRow(ei,si,s)));
+  ex.sets.forEach((s,si)=>sc.appendChild(buildSetRow(ei,si,s,isCardio)));
   return block;
+}
+function setExVariation(ei,val){
+  S.currentSession.exercises[ei].variation=val;saveState();
 }
 
 function toggleChangeEx(ei){
@@ -1366,8 +1606,22 @@ function swapExercise(ei,newName){
   saveState();renderSessionExercises();
 }
 
-function buildSetRow(ei,si,set){
+function buildSetRow(ei,si,set,isCardio){
   const row=document.createElement('div');
+  if(isCardio===undefined){
+    const ex=S.currentSession.exercises[ei];
+    isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
+  }
+  if(isCardio){
+    row.className='set-row cardio-row';row.id=`set-${ei}-${si}`;
+    row.innerHTML=`
+      <div class="set-num">${si+1}</div>
+      <div><input class="set-input" type="number" inputmode="decimal" placeholder="—" value="${set.time||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'time',this.value)"><div class="cardio-label">min</div></div>
+      <div><input class="set-input" type="number" inputmode="decimal" placeholder="—" value="${set.speed||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'speed',this.value)"><div class="cardio-label">speed</div></div>
+      <div><input class="set-input" type="number" inputmode="decimal" placeholder="—" value="${set.resistance||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'resistance',this.value)"><div class="cardio-label">resistance</div></div>
+      <div></div>`;
+    return row;
+  }
   const isWarmup=set.warmup||false;
   const pr=!isWarmup&&isPR(S.currentSession.exercises[ei].name,set.weight,set.reps);
   row.className=`set-row${pr?' pr':''}${isWarmup?' warmup-row':''}`;row.id=`set-${ei}-${si}`;
@@ -1394,15 +1648,19 @@ function toggleWarmup(ei,si){
 }
 
 function addSet(ei){
-  const sets=S.currentSession.exercises[ei].sets;
-  const last=sets.length>0?sets[sets.length-1]:{weight:'',reps:''};
-  // Autofill from last set
-  sets.push({weight:last.weight||'',reps:last.reps||'',ts:Date.now(),warmup:false});
+  const ex=S.currentSession.exercises[ei];
+  const sets=ex.sets;
+  const last=sets.length>0?sets[sets.length-1]:{weight:'',reps:'',time:'',speed:'',resistance:''};
+  const isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
+  sets.push(isCardio
+    ?{time:last.time||'',speed:last.speed||'',resistance:last.resistance||'',ts:Date.now()}
+    :{weight:last.weight||'',reps:last.reps||'',ts:Date.now(),warmup:false});
   const sc=document.getElementById(`sets-${ei}`);
   const si=sets.length-1;
-  const row=buildSetRow(ei,si,sets[si]);
+  const row=buildSetRow(ei,si,sets[si],isCardio);
   sc.appendChild(row);
   scrollToCenter(row);
+  resetRestTimer();
   saveState();
 }
 
@@ -1428,7 +1686,15 @@ function updateSet(ei,si,field,val){
 
 function removeExercise(ei){S.currentSession.exercises.splice(ei,1);renderSessionExercises();saveState();}
 function backToDaySelect(){
-  stopTimer();
+  stopTimer();stopRestTimer();
+  document.getElementById('log-active').style.display='none';
+  document.getElementById('log-home').style.display='block';
+  renderDayGrid();
+}
+function cancelWorkout(){
+  if(!confirm('Cancel this workout? All progress will be lost.'))return;
+  S.currentSession=null;
+  stopTimer();stopRestTimer();saveState();
   document.getElementById('log-active').style.display='none';
   document.getElementById('log-home').style.display='block';
   renderDayGrid();
@@ -1443,14 +1709,23 @@ function finishWorkout(){
   const duration=endTime-S.currentSession.startTime;
   const def=allDayDefs().find(d=>d.id===S.currentSession.dayId);
   const newPRs=[];
+  if(!S.cardioPrs)S.cardioPrs={};
   S.currentSession.exercises.forEach(ex=>{
-    ex.sets.forEach(s=>{
-      if(!s.warmup&&s.weight&&s.reps&&isPR(ex.name,s.weight,s.reps)){
-        const old=S.prs[ex.name];
-        newPRs.push({name:ex.name,oldWeight:old?old.weight:null,oldReps:old?old.reps:null,newWeight:s.weight,newReps:s.reps});
-        recordPR(ex.name,s.weight,s.reps);
-      }
-    });
+    const isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
+    if(isCardio){
+      ex.sets.forEach(s=>{
+        if(s.time||s.speed||s.resistance)
+          S.cardioPrs[ex.name]={time:s.time||'',speed:s.speed||'',resistance:s.resistance||'',date:Date.now()};
+      });
+    }else{
+      ex.sets.forEach(s=>{
+        if(!s.warmup&&s.weight&&s.reps&&isPR(ex.name,s.weight,s.reps)){
+          const old=S.prs[ex.name];
+          newPRs.push({name:ex.name,oldWeight:old?old.weight:null,oldReps:old?old.reps:null,newWeight:s.weight,newReps:s.reps});
+          recordPR(ex.name,s.weight,s.reps);
+        }
+      });
+    }
   });
   const weightUpdates=[];
   S.currentSession.exercises.forEach(ex=>{
@@ -1465,7 +1740,7 @@ function finishWorkout(){
     exercises:JSON.parse(JSON.stringify(S.currentSession.exercises)),
     calories:calcWorkoutCalories(S.currentSession.exercises,duration),
   });
-  S.currentSession=null;stopTimer();saveState();
+  S.currentSession=null;stopTimer();stopRestTimer();saveState();
   showSummary({def,duration,exercises:S.workouts[0].exercises,newPRs,weightUpdates,calories:S.workouts[0].calories});
   document.getElementById('log-active').style.display='none';
   document.getElementById('log-home').style.display='block';
@@ -1566,7 +1841,9 @@ function buildModalItem(ex,isAdded){
 
 function addExToSession(ex){
   const resolved=resolveEx(ex);
-  S.currentSession.exercises.push({...resolved,timestamp:Date.now(),sets:[{weight:'',reps:'',ts:Date.now(),warmup:false}]});
+  const isCardio=CARDIO_EXERCISES.has(resolved.name)||resolved.muscle==='Cardio';
+  const initSet=isCardio?{time:'',speed:'',resistance:'',ts:Date.now()}:{weight:'',reps:'',ts:Date.now(),warmup:false};
+  S.currentSession.exercises.push({...resolved,timestamp:Date.now(),sets:[initSet]});
   saveState();renderSessionExercises();
 }
 
@@ -1623,10 +1900,10 @@ function renderRecordsExercises(muscle,q){
   if(q.trim())exs=exs.filter(e=>e.name.toLowerCase().includes(q.toLowerCase()));
   exs.sort((a,b)=>a.name.localeCompare(b.name));
   body.innerHTML=`<div class="status-pad"></div>
-    <div style="display:flex;align-items:center;padding:0 20px 16px;gap:8px">
+    <div class="records-sticky-header">
       <button onclick="renderRecords()" style="background:none;border:none;color:var(--accent);font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:2px;flex-shrink:0">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
-      <div style="flex:1;font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1">${icon} ${muscle}</div>
+      <div style="flex:1;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1">${icon} ${muscle}</div>
     </div>
     ${buildRecordsExList(exs)}<div style="height:16px"></div>`;
 }
@@ -1634,10 +1911,21 @@ function buildRecordsExList(exs){
   if(!exs.length)return`<div style="text-align:center;padding:60px 20px;color:var(--muted)">No exercises found</div>`;
   return`<div style="margin:0 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden">
     ${exs.map((ex,i)=>{
-      const pr=S.prs[ex.name];const r=resolveEx(ex);
+      const isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
+      const pr=isCardio?(S.cardioPrs&&S.cardioPrs[ex.name]):S.prs[ex.name];
+      let prHtml;
+      if(isCardio){
+        prHtml=pr
+          ?`<div class="er-pr-val" style="font-size:15px">${pr.time?pr.time+' min':''}</div><div class="er-pr-date">${[pr.speed?'spd '+pr.speed:'',pr.resistance?'res '+pr.resistance:''].filter(Boolean).join(' · ')}${pr.date?' · '+shortDate(pr.date):''}</div>`
+          :`<div class="er-no-pr">No record yet</div>`;
+      }else{
+        prHtml=pr
+          ?`<div class="er-pr-val">${pr.weight}lbs</div><div class="er-pr-date">&times; ${pr.reps} reps &middot; ${shortDate(pr.date)}</div>`
+          :`<div class="er-no-pr">No PR yet</div>`;
+      }
       return`<div class="exercise-record-row"${i>0?' style="border-top:1px solid var(--border)"':''}>
-        <div><div class="er-name">${ex.name}</div><div class="er-target">${r.targetSets} &middot; ${r.targetReps}${r.targetWeight?` &middot; ${r.targetWeight}lbs`:''}</div></div>
-        <div class="er-pr">${pr?`<div class="er-pr-val">${pr.weight}lbs</div><div class="er-pr-date">&times; ${pr.reps} reps &middot; ${shortDate(pr.date)}</div>`:`<div class="er-no-pr">No PR yet</div>`}</div>
+        <div><div class="er-name">${ex.name}</div></div>
+        <div class="er-pr">${prHtml}</div>
       </div>`;
     }).join('')}
   </div>`;
@@ -1758,7 +2046,7 @@ function renderHistoryList(filterDate){
         <div class="he-badges">
           ${hasPR?`<span class="pr-badge">PR</span>`:''}
           <div class="he-duration">${durStr(w.duration)}</div>
-          <button class="he-del-btn" onclick="deleteWorkout(${realIdx})">&#128465;</button>
+          <button class="he-del-btn" onclick="deleteWorkout(${realIdx})">&#10005;</button>
         </div>
       </div>
       <div class="he-body">${exDetail}
@@ -1819,8 +2107,8 @@ function importData(input){
       const data=JSON.parse(e.target.result);
       Object.assign(S,data);
       if(!S.dayPlans)S.dayPlans=JSON.parse(JSON.stringify(DEFAULT_DAY_PLANS));
-      saveState();applyAccent(S.accentColor);
-      renderDayGrid();renderRecords();renderHistory();renderCustomExList();loadProfileInputs();renderSwatches();
+      saveState();applyTheme((S.themes&&S.themes.active)||'dark');updateThemeBadges();
+      renderDayGrid();renderRecords();renderHistory();renderCustomExList();loadProfileInputs();
       showToast('&#8593; Data imported',false);
     }catch(err){showToast('Invalid backup file',false);}
   };
@@ -1851,7 +2139,7 @@ function switchPage(id,btn){
   document.getElementById('page-container').scrollTop=0;
   if(id==='records')renderRecords();
   if(id==='history')renderHistory();
-  if(id==='settings'){renderSwatches();renderCustomExList();loadProfileInputs();}
+  if(id==='settings'){updateThemeBadges();renderCustomExList();loadProfileInputs();}
 }
 
 // ══════════════════════════════════════════════
@@ -1868,13 +2156,35 @@ function showToast(msg,isPr){
 //  INIT
 // ══════════════════════════════════════════════
 loadState();
-applyAccent(S.accentColor);
+applyTheme((S.themes&&S.themes.active)||'dark');
+updateThemeBadges();
 renderDayGrid();
 if(S.currentSession){
   document.getElementById('log-home').style.display='none';
   document.getElementById('log-active').style.display='block';
   renderActiveSession();startTimer();
 }
+</script>
+
+<script type="module">
+// ══════════════════════════════════════════════
+//  FIREBASE
+// ══════════════════════════════════════════════
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4p9ladsBpr4CoMPnysQbDNcWMiUR5onc",
+  authDomain: "ironlog-41457.firebaseapp.com",
+  projectId: "ironlog-41457",
+  storageBucket: "ironlog-41457.firebasestorage.app",
+  messagingSenderId: "1049172749246",
+  appId: "1:1049172749246:web:71289c76d1e1fba8d167ef",
+  measurementId: "G-X5XWMP8T41"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 </script>
 </body>
 </html>
