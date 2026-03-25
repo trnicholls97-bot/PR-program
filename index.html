@@ -277,10 +277,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .lib-modal-overlay{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.32,.72,0,1)}
 .lib-modal-overlay.open{transform:translateX(0)}
 .lib-modal-header{display:flex;align-items:center;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid var(--border);flex-shrink:0;gap:4px;background:var(--bg)}
-.lib-modal-back-btn{background:none;border:none;color:var(--accent);font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;cursor:pointer;padding:6px 10px 6px 0;border-radius:8px;display:none;align-items:center;gap:2px;flex-shrink:0;white-space:nowrap}
-.lib-modal-back-btn.visible{display:flex}
+.lib-modal-back-btn{background:none;border:none;color:var(--accent);font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;cursor:pointer;padding:6px 10px 6px 0;border-radius:8px;display:flex;align-items:center;gap:2px;flex-shrink:0;white-space:nowrap}
 .lib-modal-title{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
-.lib-modal-close-btn{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px 0 4px 8px;line-height:1;flex-shrink:0}
 .lib-modal-content{flex:1;overflow-y:auto;scrollbar-width:none}
 .lib-modal-content::-webkit-scrollbar{display:none}
 .lib-modal-search-bar{padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--bg);flex-shrink:0}
@@ -316,9 +314,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .plans-ex-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;flex-shrink:0;line-height:1}
 .plans-ex-del:active{color:var(--red)}
 .plans-new-day-form{padding:16px}
-.plans-icon-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.plans-icon-btn{width:44px;height:44px;border-radius:10px;background:var(--surface2);border:2px solid var(--border);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .1s;line-height:1}
-.plans-icon-btn.selected{border-color:var(--accent);background:var(--accent-dim)}
+.plans-emoji-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:28px;padding:10px 16px;outline:none;transition:border-color .15s;-webkit-appearance:none;box-sizing:border-box;text-align:center;line-height:1.3}
+.plans-emoji-input:focus{border-color:var(--accent)}
 .plans-add-ex-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .15s}
 .plans-add-ex-btn:active{opacity:.8}
 .plans-new-day-card{border:2px dashed var(--border);border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer;transition:border-color .12s,background .12s;color:var(--accent);-webkit-tap-highlight-color:transparent}
@@ -638,7 +635,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
    Back
   </button>
   <div class="lib-modal-title" id="plans-modal-title">Workout Days</div>
-  <button class="lib-modal-close-btn" onclick="closePlansModal()">&#10005;</button>
  </div>
  <div class="lib-modal-content" id="plans-modal-content"></div>
  <div class="plans-modal-footer">
@@ -659,7 +655,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
    Back
   </button>
   <div class="lib-modal-title" id="lib-modal-title">Exercise Library</div>
-  <button class="lib-modal-close-btn" onclick="closeLibraryModal()">&#10005;</button>
  </div>
  <div class="lib-modal-content" id="lib-modal-content"></div>
  <div class="lib-modal-search-bar">
@@ -688,6 +683,7 @@ let S={
   profile:{age:'',sex:'',weight:'',ft:'',in:'',formula:'mifflin',bfPct:'',neck:'',waist:'',hip:''},
   customDays:[],
   exerciseOverrides:{},
+  dayIconOverrides:{},
   dayPlans:JSON.parse(JSON.stringify(DEFAULT_DAY_PLANS)),
   currentSession:null,
   workouts:[],
@@ -730,7 +726,8 @@ function isPR(name,w,r){if(!w||!r)return false;const v=e1rm(w,r),p=S.prs[name];r
 function recordPR(name,w,r){S.prs[name]={weight:w,reps:r,e1rm:e1rm(w,r),date:Date.now()};}
 
 function allDayDefs(){
-  return [...DAY_DEFS,...(S.customDays||[])];
+  const ov=S.dayIconOverrides||{};
+  return [...DAY_DEFS,...(S.customDays||[])].map(d=>ov[d.id]?{...d,icon:ov[d.id]}:d);
 }
 function allExercises(){
   return [...EXERCISE_LIB,...S.customExercises.map(ce=>({...ce}))];
@@ -937,16 +934,14 @@ function applyHexInput(){
 // ══════════════════════════════════════════════
 //  PLANS MODAL
 // ══════════════════════════════════════════════
-const PLANS_ICON_PRESETS=['💪','🔥','⚡','🏋️','🦵','🔱','🎯','💥','🦾','🏆','🔄','🧠'];
 let plansModalView='days'; // 'days','exercises','add-muscles','add-exercises','new-day'
 let plansModalDayId=null;
 let plansModalMuscle=null;
-let plansNewDayIcon='💪';
 
 function openPlansModal(){
   plansModalView='days';plansModalDayId=null;plansModalMuscle=null;
   document.getElementById('plans-modal-search').value='';
-  document.getElementById('plans-modal-back').classList.remove('visible');
+  document.getElementById('plans-modal-back').onclick=closePlansModal;
   document.getElementById('plans-modal-title').textContent='Workout Days';
   document.getElementById('plans-action-bar').style.display='none';
   renderPlansDayList('');
@@ -959,7 +954,7 @@ function plansModalBack(){
   document.getElementById('plans-modal-search').value='';
   if(plansModalView==='exercises'||plansModalView==='new-day'){
     plansModalView='days';plansModalDayId=null;
-    document.getElementById('plans-modal-back').classList.remove('visible');
+    document.getElementById('plans-modal-back').onclick=closePlansModal;
     document.getElementById('plans-modal-title').textContent='Workout Days';
     document.getElementById('plans-action-bar').style.display='none';
     renderPlansDayList('');
@@ -980,7 +975,7 @@ function selectPlanDay(dayId){
   plansModalView='exercises';plansModalDayId=dayId;
   const def=allDayDefs().find(d=>d.id===dayId);
   document.getElementById('plans-modal-search').value='';
-  document.getElementById('plans-modal-back').classList.add('visible');
+  document.getElementById('plans-modal-back').onclick=plansModalBack;
   document.getElementById('plans-modal-title').textContent=def?def.label:'Day';
   document.getElementById('plans-action-bar').style.display='block';
   renderPlansDayExercises(dayId,'');
@@ -1013,36 +1008,36 @@ function removeExFromDay(dayId,idx){
 }
 function showNewDayForm(){
   plansModalView='new-day';
-  plansNewDayIcon='💪';
   document.getElementById('plans-modal-search').value='';
-  document.getElementById('plans-modal-back').classList.add('visible');
+  document.getElementById('plans-modal-back').onclick=plansModalBack;
   document.getElementById('plans-modal-title').textContent='New Day';
   document.getElementById('plans-action-bar').style.display='none';
   renderNewDayForm();
 }
+function limitEmojiInput(input,max){
+  const seg=new Intl.Segmenter();
+  const clusters=[...seg.segment(input.value)].map(s=>s.segment);
+  if(clusters.length>max){
+    input.value=clusters.slice(0,max).join('');
+  }
+}
 function renderNewDayForm(){
   document.getElementById('plans-modal-content').innerHTML=`<div class="plans-new-day-form">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Icon</div>
-    <div class="plans-icon-grid">${PLANS_ICON_PRESETS.map(ic=>
-      `<button class="plans-icon-btn${ic===plansNewDayIcon?' selected':''}" onclick="selectNewDayIcon('${ic}')">${ic}</button>`
-    ).join('')}</div>
-    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:16px">Name</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Icon (up to 2 emojis)</div>
+    <input class="plans-emoji-input" id="new-day-icon" type="text" placeholder="😀" oninput="limitEmojiInput(this,2)" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:16px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Name</div>
     <input class="lib-modal-search-input" id="new-day-name" placeholder="e.g. Push Day" type="text" autocomplete="off" style="margin-bottom:16px">
     <button class="plans-add-btn" onclick="saveNewDay()">Create Day</button>
   </div>`;
 }
-function selectNewDayIcon(icon){
-  plansNewDayIcon=icon;
-  document.querySelectorAll('.plans-icon-btn').forEach(btn=>{
-    btn.classList.toggle('selected',btn.textContent.trim()===icon);
-  });
-}
 function saveNewDay(){
   const name=(document.getElementById('new-day-name').value||'').trim();
   if(!name){showToast('Enter a day name',false);return;}
+  const iconEl=document.getElementById('new-day-icon');
+  const icon=(iconEl?iconEl.value.trim():'')||'💪';
   const id='custom_'+Date.now();
   if(!S.customDays)S.customDays=[];
-  S.customDays.push({id,label:name,icon:plansNewDayIcon});
+  S.customDays.push({id,label:name,icon});
   S.dayPlans[id]=[];
   saveState();renderDayGrid();
   showToast(`Created: ${name}`,false);
@@ -1082,6 +1077,13 @@ function renderPlansDayExercises(dayId,q){
   if(q.trim())exNames=exNames.filter(n=>n.toLowerCase().includes(q.toLowerCase()));
   const isCustom=(S.customDays||[]).some(cd=>cd.id===dayId);
   const esc=dayId.replace(/'/g,"\\'");
+  const def=allDayDefs().find(d=>d.id===dayId);
+  const currentIcon=def?def.icon:'';
+  const iconSection=`<div style="padding:14px 16px 10px;border-bottom:1px solid var(--border)">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Day Icon</div>
+    <input class="plans-emoji-input" id="day-icon-input-${esc}" type="text" value="${currentIcon}" placeholder="😀" oninput="limitEmojiInput(this,2)" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:6px">
+    <button class="plans-add-btn" style="padding:10px 14px;font-size:14px" onclick="saveDayIcon('${esc}')">Save Icon</button>
+  </div>`;
   const rows=exNames.length?exNames.map(name=>{
     const idx=allExNames.indexOf(name);
     const ex=findEx(name);
@@ -1091,7 +1093,16 @@ function renderPlansDayExercises(dayId,q){
     </div>`;
   }).join(''):`<div style="text-align:center;padding:60px 20px;color:var(--muted)">${q.trim()?'No exercises found':'No exercises yet.<br>Tap <b>+ Add Exercise</b> below.'}</div>`;
   const deleteRow=isCustom&&!q.trim()?`<div style="text-align:center;padding:20px 20px 8px;cursor:pointer;color:var(--red);font-size:13px;font-weight:600;letter-spacing:.04em" onclick="if(confirm('Delete this day?'))deleteCustomDay('${esc}')">Delete Day</div>`:'';
-  content.innerHTML=rows+deleteRow;
+  content.innerHTML=iconSection+rows+deleteRow;
+}
+function saveDayIcon(dayId){
+  const el=document.getElementById('day-icon-input-'+dayId);
+  if(!el)return;
+  const icon=el.value.trim();
+  if(!S.dayIconOverrides)S.dayIconOverrides={};
+  S.dayIconOverrides[dayId]=icon;
+  saveState();renderDayGrid();
+  showToast('Icon saved',false);
 }
 function renderPlansAddMuscles(q){
   const content=document.getElementById('plans-modal-content');
@@ -1151,7 +1162,7 @@ function openLibraryModal(){
   libModalView='muscles';
   libModalMuscle=null;
   document.getElementById('lib-modal-search').value='';
-  document.getElementById('lib-modal-back').classList.remove('visible');
+  document.getElementById('lib-modal-back').onclick=closeLibraryModal;
   document.getElementById('lib-modal-title').textContent='Exercise Library';
   renderLibMuscleGroups('');
   document.getElementById('lib-modal').classList.add('open');
@@ -1163,7 +1174,7 @@ function libModalBack(){
   libModalView='muscles';
   libModalMuscle=null;
   document.getElementById('lib-modal-search').value='';
-  document.getElementById('lib-modal-back').classList.remove('visible');
+  document.getElementById('lib-modal-back').onclick=closeLibraryModal;
   document.getElementById('lib-modal-title').textContent='Exercise Library';
   renderLibMuscleGroups('');
 }
@@ -1171,7 +1182,7 @@ function selectLibMuscle(muscle){
   libModalView='exercises';
   libModalMuscle=muscle;
   document.getElementById('lib-modal-search').value='';
-  document.getElementById('lib-modal-back').classList.add('visible');
+  document.getElementById('lib-modal-back').onclick=libModalBack;
   document.getElementById('lib-modal-title').textContent=muscle;
   renderLibExercises(muscle,'');
 }
