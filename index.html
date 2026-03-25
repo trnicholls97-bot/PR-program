@@ -294,6 +294,33 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .lib-muscle-name{font-weight:700;font-size:14px}
 .lib-muscle-count{font-size:11px;color:var(--muted);margin-top:2px}
 .lib-ex-list{padding:8px 0}
+/* PLANS MODAL */
+.plans-modal-footer{flex-shrink:0;border-top:1px solid var(--border);background:var(--bg)}
+.plans-action-bar{padding:12px 16px 8px}
+.plans-add-btn{width:100%;padding:14px;border-radius:12px;background:var(--accent);color:#fff;border:none;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:opacity .15s}
+.plans-add-btn:active{opacity:.85}
+.plans-day-row{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;gap:12px;transition:background .1s;-webkit-tap-highlight-color:transparent}
+.plans-day-row:active{background:var(--surface2)}
+.plans-day-icon{font-size:24px;flex-shrink:0;width:32px;text-align:center}
+.plans-day-info{flex:1;min-width:0}
+.plans-day-name{font-weight:600;font-size:15px}
+.plans-day-count{font-size:12px;color:var(--muted2);margin-top:2px}
+.plans-day-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 0 4px 8px;flex-shrink:0;line-height:1}
+.plans-day-del:active{color:var(--red)}
+.plans-day-chevron{color:var(--accent);font-size:20px;flex-shrink:0;line-height:1}
+.plans-new-day-row{display:flex;align-items:center;padding:14px 16px;cursor:pointer;gap:12px;transition:background .1s;color:var(--accent);-webkit-tap-highlight-color:transparent}
+.plans-new-day-row:active{background:var(--surface2)}
+.plans-ex-row{display:flex;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);gap:10px}
+.plans-ex-name{font-size:14px;font-weight:500}
+.plans-ex-muscle{font-size:11px;color:var(--muted2);margin-top:2px}
+.plans-ex-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;flex-shrink:0;line-height:1}
+.plans-ex-del:active{color:var(--red)}
+.plans-new-day-form{padding:16px}
+.plans-icon-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.plans-icon-btn{width:44px;height:44px;border-radius:10px;background:var(--surface2);border:2px solid var(--border);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .1s;line-height:1}
+.plans-icon-btn.selected{border-color:var(--accent);background:var(--accent-dim)}
+.plans-add-ex-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.plans-add-ex-btn:active{opacity:.8}
 </style>
 </head>
 <body>
@@ -459,14 +486,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
    <!-- WORKOUT PLANS -->
    <div class="section-label">Workout Plans</div>
    <div class="settings-group">
-    <div class="settings-row" style="cursor:pointer" onclick="togglePlans()">
+    <div class="settings-row" style="cursor:pointer" onclick="openPlansModal()">
      <div>
       <div class="settings-row-label">Customize Day Plans</div>
-      <div class="settings-row-sub">Edit exercises shown for each day</div>
+      <div class="settings-row-sub">Add, edit, or create workout days</div>
      </div>
-     <span style="color:var(--accent)" id="plans-toggle-icon">&#9660;</span>
+     <span style="color:var(--accent)">&#8250;</span>
     </div>
-    <div id="plans-body" style="display:none"></div>
    </div>
 
    <!-- EXERCISE LIBRARY -->
@@ -599,6 +625,27 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
  </div>
 </div>
 
+<!-- PLANS MODAL -->
+<div class="lib-modal-overlay" id="plans-modal">
+ <div class="lib-modal-header">
+  <button class="lib-modal-back-btn" id="plans-modal-back" onclick="plansModalBack()">
+   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+   Back
+  </button>
+  <div class="lib-modal-title" id="plans-modal-title">Workout Days</div>
+  <button class="lib-modal-close-btn" onclick="closePlansModal()">&#10005;</button>
+ </div>
+ <div class="lib-modal-content" id="plans-modal-content"></div>
+ <div class="plans-modal-footer">
+  <div class="plans-action-bar" id="plans-action-bar" style="display:none">
+   <button class="plans-add-btn" onclick="openAddExPicker()">+ Add Exercise</button>
+  </div>
+  <div style="padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom))">
+   <input class="lib-modal-search-input" id="plans-modal-search" type="search" placeholder="Search..." oninput="filterPlansSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+  </div>
+ </div>
+</div>
+
 <!-- LIBRARY MODAL -->
 <div class="lib-modal-overlay" id="lib-modal">
  <div class="lib-modal-header">
@@ -634,6 +681,7 @@ const ACCENT_PRESETS=[
 let S={
   accentColor:'#ff6b35',
   profile:{age:'',sex:'',weight:'',ft:'',in:'',formula:'mifflin',bfPct:'',neck:'',waist:'',hip:''},
+  customDays:[],
   exerciseOverrides:{},
   dayPlans:JSON.parse(JSON.stringify(DEFAULT_DAY_PLANS)),
   currentSession:null,
@@ -676,6 +724,9 @@ function e1rm(w,r){return(w&&r)?Math.round(w*(1+r/30)):0;}
 function isPR(name,w,r){if(!w||!r)return false;const v=e1rm(w,r),p=S.prs[name];return!p||v>p.e1rm;}
 function recordPR(name,w,r){S.prs[name]={weight:w,reps:r,e1rm:e1rm(w,r),date:Date.now()};}
 
+function allDayDefs(){
+  return [...DAY_DEFS,...(S.customDays||[])];
+}
 function allExercises(){
   return [...EXERCISE_LIB,...S.customExercises.map(ce=>({...ce}))];
 }
@@ -879,61 +930,212 @@ function applyHexInput(){
 }
 
 // ══════════════════════════════════════════════
-//  WORKOUT PLANS EDITOR
+//  PLANS MODAL
 // ══════════════════════════════════════════════
-let plansOpen=false;
-function togglePlans(){
-  plansOpen=!plansOpen;
-  document.getElementById('plans-toggle-icon').innerHTML=plansOpen?'&#9650;':'&#9660;';
-  const body=document.getElementById('plans-body');
-  body.style.display=plansOpen?'block':'none';
-  if(plansOpen)renderPlans();
+const PLANS_ICON_PRESETS=['💪','🔥','⚡','🏋️','🦵','🔱','🎯','💥','🦾','🏆','🔄','🧠'];
+let plansModalView='days'; // 'days','exercises','add-muscles','add-exercises','new-day'
+let plansModalDayId=null;
+let plansModalMuscle=null;
+let plansNewDayIcon='💪';
+
+function openPlansModal(){
+  plansModalView='days';plansModalDayId=null;plansModalMuscle=null;
+  document.getElementById('plans-modal-search').value='';
+  document.getElementById('plans-modal-back').classList.remove('visible');
+  document.getElementById('plans-modal-title').textContent='Workout Days';
+  document.getElementById('plans-action-bar').style.display='none';
+  renderPlansDayList('');
+  document.getElementById('plans-modal').classList.add('open');
 }
-function renderPlans(){
-  const body=document.getElementById('plans-body');
-  body.innerHTML=DAY_DEFS.filter(d=>d.id!=='misc').map(d=>{
-    const plan=S.dayPlans[d.id]||[];
-    return`<div class="plan-day-section">
-      <div class="plan-day-header" onclick="togglePlanDay('${d.id}')">
-        <div>
-          <div class="plan-day-name">${d.icon} ${d.label}</div>
-          <div class="plan-day-count">${plan.length} exercise${plan.length!==1?'s':''}</div>
-        </div>
-        <span style="color:var(--muted);font-size:12px">&#9998;</span>
-      </div>
-      <div class="plan-day-body" id="plan-body-${d.id}">
-        ${plan.map((name,i)=>`<div class="plan-ex-row">
-          <div class="plan-ex-name">${name}</div>
-          <button class="plan-ex-del" onclick="removePlanEx('${d.id}',${i})">&#10005;</button>
-        </div>`).join('')}
-        <div style="margin-top:8px">
-          <input class="plan-add-search" id="plan-search-${d.id}" placeholder="Search to add exercise..." oninput="filterPlanSearch('${d.id}',this.value)">
-          <div class="plan-add-results" id="plan-results-${d.id}"></div>
-        </div>
-      </div>
+function closePlansModal(){
+  document.getElementById('plans-modal').classList.remove('open');
+}
+function plansModalBack(){
+  document.getElementById('plans-modal-search').value='';
+  if(plansModalView==='exercises'||plansModalView==='new-day'){
+    plansModalView='days';plansModalDayId=null;
+    document.getElementById('plans-modal-back').classList.remove('visible');
+    document.getElementById('plans-modal-title').textContent='Workout Days';
+    document.getElementById('plans-action-bar').style.display='none';
+    renderPlansDayList('');
+  }else if(plansModalView==='add-muscles'){
+    plansModalView='exercises';plansModalMuscle=null;
+    const def=allDayDefs().find(d=>d.id===plansModalDayId);
+    document.getElementById('plans-modal-title').textContent=def?def.label:'Day';
+    document.getElementById('plans-action-bar').style.display='block';
+    renderPlansDayExercises(plansModalDayId,'');
+  }else if(plansModalView==='add-exercises'){
+    plansModalView='add-muscles';plansModalMuscle=null;
+    document.getElementById('plans-modal-title').textContent='Add Exercise';
+    document.getElementById('plans-action-bar').style.display='none';
+    renderPlansAddMuscles('');
+  }
+}
+function selectPlanDay(dayId){
+  plansModalView='exercises';plansModalDayId=dayId;
+  const def=allDayDefs().find(d=>d.id===dayId);
+  document.getElementById('plans-modal-search').value='';
+  document.getElementById('plans-modal-back').classList.add('visible');
+  document.getElementById('plans-modal-title').textContent=def?def.label:'Day';
+  document.getElementById('plans-action-bar').style.display='block';
+  renderPlansDayExercises(dayId,'');
+}
+function openAddExPicker(){
+  plansModalView='add-muscles';plansModalMuscle=null;
+  document.getElementById('plans-modal-search').value='';
+  document.getElementById('plans-modal-title').textContent='Add Exercise';
+  document.getElementById('plans-action-bar').style.display='none';
+  renderPlansAddMuscles('');
+}
+function selectPlansAddMuscle(muscle){
+  plansModalView='add-exercises';plansModalMuscle=muscle;
+  document.getElementById('plans-modal-search').value='';
+  document.getElementById('plans-modal-title').textContent=muscle;
+  renderPlansAddExercises(muscle,'');
+}
+function addExToDay(name){
+  const dayId=plansModalDayId;
+  if(!S.dayPlans[dayId])S.dayPlans[dayId]=[];
+  if(!S.dayPlans[dayId].includes(name)){
+    S.dayPlans[dayId].push(name);saveState();
+    showToast(`Added: ${name}`,false);
+  }
+}
+function removeExFromDay(dayId,idx){
+  if(!S.dayPlans[dayId])return;
+  S.dayPlans[dayId].splice(idx,1);saveState();
+  renderPlansDayExercises(dayId,document.getElementById('plans-modal-search').value);
+}
+function showNewDayForm(){
+  plansModalView='new-day';
+  plansNewDayIcon='💪';
+  document.getElementById('plans-modal-search').value='';
+  document.getElementById('plans-modal-back').classList.add('visible');
+  document.getElementById('plans-modal-title').textContent='New Day';
+  document.getElementById('plans-action-bar').style.display='none';
+  renderNewDayForm();
+}
+function renderNewDayForm(){
+  document.getElementById('plans-modal-content').innerHTML=`<div class="plans-new-day-form">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Icon</div>
+    <div class="plans-icon-grid">${PLANS_ICON_PRESETS.map(ic=>
+      `<button class="plans-icon-btn${ic===plansNewDayIcon?' selected':''}" onclick="selectNewDayIcon('${ic}')">${ic}</button>`
+    ).join('')}</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:16px">Name</div>
+    <input class="lib-modal-search-input" id="new-day-name" placeholder="e.g. Push Day" type="text" autocomplete="off" style="margin-bottom:16px">
+    <button class="plans-add-btn" onclick="saveNewDay()">Create Day</button>
+  </div>`;
+}
+function selectNewDayIcon(icon){
+  plansNewDayIcon=icon;
+  document.querySelectorAll('.plans-icon-btn').forEach(btn=>{
+    btn.classList.toggle('selected',btn.textContent.trim()===icon);
+  });
+}
+function saveNewDay(){
+  const name=(document.getElementById('new-day-name').value||'').trim();
+  if(!name){showToast('Enter a day name',false);return;}
+  const id='custom_'+Date.now();
+  if(!S.customDays)S.customDays=[];
+  S.customDays.push({id,label:name,icon:plansNewDayIcon});
+  S.dayPlans[id]=[];
+  saveState();renderDayGrid();
+  showToast(`Created: ${name}`,false);
+  selectPlanDay(id);
+}
+function deleteCustomDay(dayId){
+  if(!confirm('Delete this day?'))return;
+  S.customDays=(S.customDays||[]).filter(d=>d.id!==dayId);
+  delete S.dayPlans[dayId];
+  if(S.currentSession&&S.currentSession.dayId===dayId)S.currentSession=null;
+  saveState();renderDayGrid();
+  renderPlansDayList(document.getElementById('plans-modal-search').value);
+}
+function renderPlansDayList(q){
+  const content=document.getElementById('plans-modal-content');
+  let days=allDayDefs();
+  if(q.trim())days=days.filter(d=>d.label.toLowerCase().includes(q.toLowerCase()));
+  const rows=days.map(d=>{
+    const count=(S.dayPlans[d.id]||[]).length;
+    const isCustom=(S.customDays||[]).some(cd=>cd.id===d.id);
+    const esc=d.id.replace(/'/g,"\\'");
+    return`<div class="plans-day-row" onclick="selectPlanDay('${esc}')">
+      <div class="plans-day-icon">${d.icon}</div>
+      <div class="plans-day-info"><div class="plans-day-name">${d.label}</div><div class="plans-day-count">${count} exercise${count!==1?'s':''}</div></div>
+      ${isCustom?`<button class="plans-day-del" onclick="event.stopPropagation();deleteCustomDay('${esc}')">&#10005;</button>`:''}
+      <span class="plans-day-chevron">&#8250;</span>
+    </div>`;
+  }).join('');
+  content.innerHTML=rows+`<div class="plans-new-day-row" onclick="showNewDayForm()">
+    <span style="font-size:22px;width:32px;text-align:center;flex-shrink:0">+</span>
+    <span style="font-weight:600;font-size:15px">Create New Day</span>
+  </div>`;
+}
+function renderPlansDayExercises(dayId,q){
+  const content=document.getElementById('plans-modal-content');
+  const allExNames=S.dayPlans[dayId]||[];
+  let exNames=allExNames;
+  if(q.trim())exNames=exNames.filter(n=>n.toLowerCase().includes(q.toLowerCase()));
+  if(!exNames.length){
+    content.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--muted)">${q.trim()?'No exercises found':'No exercises yet.<br>Tap <b>+ Add Exercise</b> below.'}</div>`;
+    return;
+  }
+  content.innerHTML=exNames.map(name=>{
+    const idx=allExNames.indexOf(name);
+    const ex=findEx(name);
+    const esc=dayId.replace(/'/g,"\\'");
+    return`<div class="plans-ex-row">
+      <div style="flex:1"><div class="plans-ex-name">${name}</div><div class="plans-ex-muscle">${ex.muscle}</div></div>
+      <button class="plans-ex-del" onclick="removeExFromDay('${esc}',${idx})">&#10005;</button>
     </div>`;
   }).join('');
 }
-function togglePlanDay(dayId){
-  const body=document.getElementById(`plan-body-${dayId}`);
-  body.classList.toggle('open');
+function renderPlansAddMuscles(q){
+  const content=document.getElementById('plans-modal-content');
+  const all=allExercises();
+  if(q.trim()){
+    const qLow=q.toLowerCase();
+    const matches=all.filter(e=>e.name.toLowerCase().includes(qLow)||e.muscle.toLowerCase().includes(qLow));
+    matches.sort((a,b)=>a.name.localeCompare(b.name));
+    if(!matches.length){content.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--muted)">No exercises found</div>`;return;}
+    content.innerHTML=`<div class="lib-ex-list">${matches.map(ex=>buildPlansAddExItem(ex)).join('')}</div>`;
+    return;
+  }
+  content.innerHTML=`<div class="lib-muscle-grid">${MUSCLE_ORDER.map(m=>{
+    const count=all.filter(e=>e.muscle===m).length;
+    const icon=MUSCLE_ICONS[m]||'•';
+    return`<div class="lib-muscle-card" onclick="selectPlansAddMuscle('${m}')">
+      <div class="lib-muscle-icon">${icon}</div>
+      <div class="lib-muscle-name">${m}</div>
+      <div class="lib-muscle-count">${count} exercise${count!==1?'s':''}</div>
+    </div>`;
+  }).join('')}</div>`;
 }
-function filterPlanSearch(dayId,q){
-  const results=document.getElementById(`plan-results-${dayId}`);
-  if(!q.trim()){results.classList.remove('open');return;}
-  const matches=allExercises().filter(e=>e.name.toLowerCase().includes(q.toLowerCase())).slice(0,8);
-  results.innerHTML=matches.map(e=>`<div class="plan-add-opt" onclick="addPlanEx('${dayId}','${e.name.replace(/'/g,"\\'")}');document.getElementById('plan-search-${dayId}').value='';document.getElementById('plan-results-${dayId}').classList.remove('open')">${e.name} <span style="color:var(--muted);font-size:11px">${e.muscle}</span></div>`).join('');
-  results.classList.toggle('open',matches.length>0);
+function renderPlansAddExercises(muscle,q){
+  const content=document.getElementById('plans-modal-content');
+  let exs=allExercises().filter(e=>e.muscle===muscle);
+  if(q.trim())exs=exs.filter(e=>e.name.toLowerCase().includes(q.toLowerCase()));
+  exs.sort((a,b)=>a.name.localeCompare(b.name));
+  if(!exs.length){content.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--muted)">No exercises found</div>`;return;}
+  content.innerHTML=`<div class="lib-ex-list">${exs.map(ex=>buildPlansAddExItem(ex)).join('')}</div>`;
 }
-function addPlanEx(dayId,name){
-  if(!S.dayPlans[dayId])S.dayPlans[dayId]=[];
-  if(!S.dayPlans[dayId].includes(name))S.dayPlans[dayId].push(name);
-  saveState();renderPlans();
-  setTimeout(()=>{const b=document.getElementById(`plan-body-${dayId}`);if(b)b.classList.add('open');},50);
+function buildPlansAddExItem(ex){
+  const plan=S.dayPlans[plansModalDayId]||[];
+  const isAdded=plan.includes(ex.name);
+  const escapedName=ex.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return`<div class="modal-ex-item" id="padd-${btoa(unescape(encodeURIComponent(ex.name))).replace(/[^a-zA-Z0-9]/g,'')}" style="${isAdded?'opacity:.45':''}">
+    <div><div class="modal-ex-name">${ex.name}</div><div class="modal-ex-cat">${ex.muscle}</div></div>
+    <div>${isAdded
+      ?'<span style="color:var(--accent);font-size:13px;font-weight:600">Added &#10003;</span>'
+      :`<button class="plans-add-ex-btn" onclick="addExToDay('${escapedName}');this.textContent='Added \\u2713';this.disabled=true;this.closest('.modal-ex-item').style.opacity='.45'">Add</button>`
+    }</div>
+  </div>`;
 }
-function removePlanEx(dayId,idx){
-  S.dayPlans[dayId].splice(idx,1);saveState();renderPlans();
-  setTimeout(()=>{const b=document.getElementById(`plan-body-${dayId}`);if(b)b.classList.add('open');},50);
+function filterPlansSearch(q){
+  if(plansModalView==='days')renderPlansDayList(q);
+  else if(plansModalView==='exercises')renderPlansDayExercises(plansModalDayId,q);
+  else if(plansModalView==='add-muscles')renderPlansAddMuscles(q);
+  else if(plansModalView==='add-exercises')renderPlansAddExercises(plansModalMuscle,q);
 }
 
 // ══════════════════════════════════════════════
@@ -1045,7 +1247,7 @@ function filterLibrarySearch(q){
 // ══════════════════════════════════════════════
 function renderDayGrid(){
   document.getElementById('log-date-sub').textContent=todayStr();
-  document.getElementById('day-grid').innerHTML=DAY_DEFS.map(d=>{
+  document.getElementById('day-grid').innerHTML=allDayDefs().map(d=>{
     const active=S.currentSession&&S.currentSession.dayId===d.id;
     const count=(S.dayPlans[d.id]||[]).length;
     const cls=(d.id==='misc'?'day-card misc':'day-card')+(active?' active-session':'');
@@ -1069,7 +1271,7 @@ function selectDay(dayId){
 }
 
 function renderActiveSession(){
-  const def=DAY_DEFS.find(d=>d.id===S.currentSession.dayId);
+  const def=allDayDefs().find(d=>d.id===S.currentSession.dayId);
   document.getElementById('log-active').innerHTML=`
     <div class="status-pad"></div>
     <button class="back-btn" onclick="backToDaySelect()">
@@ -1225,7 +1427,7 @@ function finishWorkout(){
   if(!S.currentSession.exercises.length){showToast('Add at least one exercise first',false);return;}
   const endTime=Date.now();
   const duration=endTime-S.currentSession.startTime;
-  const def=DAY_DEFS.find(d=>d.id===S.currentSession.dayId);
+  const def=allDayDefs().find(d=>d.id===S.currentSession.dayId);
   const newPRs=[];
   S.currentSession.exercises.forEach(ex=>{
     ex.sets.forEach(s=>{
@@ -1303,7 +1505,7 @@ function dismissSummary(){
 //  ADD EXERCISE MODAL
 // ══════════════════════════════════════════════
 function openAddExercise(){
-  const def=DAY_DEFS.find(d=>d.id===S.currentSession?.dayId);
+  const def=allDayDefs().find(d=>d.id===S.currentSession?.dayId);
   document.getElementById('modal-title').textContent='Add Exercise';
   document.getElementById('modal-sub').textContent=def?def.label:'';
   document.getElementById('modal-search').value='';
@@ -1463,7 +1665,7 @@ function renderHistoryList(filterDate){
   }
   body.innerHTML=filtered.map((w)=>{
     const realIdx=S.workouts.indexOf(w);
-    const def=DAY_DEFS.find(d=>d.id===w.dayId);const icon=def?def.icon:'⚡';
+    const def=allDayDefs().find(d=>d.id===w.dayId);const icon=def?def.icon:'⚡';
     const hasPR=w.exercises.some(ex=>ex.sets.some(s=>{const pr=S.prs[ex.name];return pr&&pr.date>=w.startTime&&pr.date<=w.endTime;}));
 
     // Per-exercise detail with sets when a day is selected
@@ -1573,6 +1775,7 @@ function clearAllData(){
   if(!confirm('Clear ALL data? This cannot be undone.'))return;
   S.workouts=[];S.prs={};S.customExercises=[];S.currentSession=null;S.exerciseOverrides={};
   S.profile={age:'',sex:'',weight:'',ft:'',in:'',formula:'mifflin',bfPct:'',neck:'',waist:'',hip:''};
+  S.customDays=[];
   S.dayPlans=JSON.parse(JSON.stringify(DEFAULT_DAY_PLANS));
   saveState();stopTimer();
   document.getElementById('log-active').style.display='none';
