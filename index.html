@@ -352,6 +352,10 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .theme-hex-preview{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);flex-shrink:0}
 .theme-active-badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:6px;padding:3px 7px}
 </style>
+    <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div class="app">
@@ -2165,26 +2169,6 @@ if(S.currentSession){
   renderActiveSession();startTimer();
 }
 </script>
-
-<script type="module">
-// ══════════════════════════════════════════════
-//  FIREBASE
-// ══════════════════════════════════════════════
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyB4p9ladsBpr4CoMPnysQbDNcWMiUR5onc",
-  authDomain: "ironlog-41457.firebaseapp.com",
-  projectId: "ironlog-41457",
-  storageBucket: "ironlog-41457.firebasestorage.app",
-  messagingSenderId: "1049172749246",
-  appId: "1:1049172749246:web:71289c76d1e1fba8d167ef",
-  measurementId: "G-X5XWMP8T41"
-};
-
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-</script>
+    <script src="firebase-sync.js"></script>
 </body>
 </html>
