@@ -321,6 +321,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .plans-icon-btn.selected{border-color:var(--accent);background:var(--accent-dim)}
 .plans-add-ex-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .15s}
 .plans-add-ex-btn:active{opacity:.8}
+.plans-new-day-card{border:2px dashed var(--border);border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer;transition:border-color .12s,background .12s;color:var(--accent);-webkit-tap-highlight-color:transparent}
+.plans-new-day-card:active{border-color:var(--accent);background:var(--accent-dim)}
+/* RECORDS PAGE */
+#page-records.active{display:flex;flex-direction:column;height:100%;overflow:hidden}
+#records-scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior:none}
+#records-scroll-body::-webkit-scrollbar{display:none}
+.records-search-bar{flex-shrink:0;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--bg)}
 </style>
 </head>
 <body>
@@ -353,12 +360,10 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 
   <!-- ▌RECORDS ▌ -->
   <div class="page" id="page-records">
-   <div class="status-pad"></div>
-   <div class="page-head">
-    <div class="page-head-title">Records</div>
-    <div class="page-head-sub">PRs &amp; recommended ranges</div>
+   <div id="records-scroll-body"></div>
+   <div class="records-search-bar">
+    <input class="lib-modal-search-input" id="records-search" type="search" placeholder="Search exercises..." oninput="filterRecordsSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
    </div>
-   <div id="records-body"></div>
   </div>
 
   <!-- ▌HISTORY ▌ -->
@@ -1055,40 +1060,38 @@ function renderPlansDayList(q){
   const content=document.getElementById('plans-modal-content');
   let days=allDayDefs();
   if(q.trim())days=days.filter(d=>d.label.toLowerCase().includes(q.toLowerCase()));
-  const rows=days.map(d=>{
+  const cards=days.map(d=>{
     const count=(S.dayPlans[d.id]||[]).length;
-    const isCustom=(S.customDays||[]).some(cd=>cd.id===d.id);
     const esc=d.id.replace(/'/g,"\\'");
-    return`<div class="plans-day-row" onclick="selectPlanDay('${esc}')">
-      <div class="plans-day-icon">${d.icon}</div>
-      <div class="plans-day-info"><div class="plans-day-name">${d.label}</div><div class="plans-day-count">${count} exercise${count!==1?'s':''}</div></div>
-      ${isCustom?`<button class="plans-day-del" onclick="event.stopPropagation();deleteCustomDay('${esc}')">&#10005;</button>`:''}
-      <span class="plans-day-chevron">&#8250;</span>
+    return`<div class="lib-muscle-card" onclick="selectPlanDay('${esc}')">
+      <div class="lib-muscle-icon">${d.icon}</div>
+      <div class="lib-muscle-name">${d.label}</div>
+      <div class="lib-muscle-count">${count} exercise${count!==1?'s':''}</div>
     </div>`;
   }).join('');
-  content.innerHTML=rows+`<div class="plans-new-day-row" onclick="showNewDayForm()">
-    <span style="font-size:22px;width:32px;text-align:center;flex-shrink:0">+</span>
-    <span style="font-weight:600;font-size:15px">Create New Day</span>
+  const newCard=`<div class="plans-new-day-card" onclick="showNewDayForm()">
+    <div style="font-size:28px;margin-bottom:6px">+</div>
+    <div style="font-weight:700;font-size:14px">New Day</div>
   </div>`;
+  content.innerHTML=`<div class="lib-muscle-grid">${cards+newCard}</div>`;
 }
 function renderPlansDayExercises(dayId,q){
   const content=document.getElementById('plans-modal-content');
   const allExNames=S.dayPlans[dayId]||[];
   let exNames=allExNames;
   if(q.trim())exNames=exNames.filter(n=>n.toLowerCase().includes(q.toLowerCase()));
-  if(!exNames.length){
-    content.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--muted)">${q.trim()?'No exercises found':'No exercises yet.<br>Tap <b>+ Add Exercise</b> below.'}</div>`;
-    return;
-  }
-  content.innerHTML=exNames.map(name=>{
+  const isCustom=(S.customDays||[]).some(cd=>cd.id===dayId);
+  const esc=dayId.replace(/'/g,"\\'");
+  const rows=exNames.length?exNames.map(name=>{
     const idx=allExNames.indexOf(name);
     const ex=findEx(name);
-    const esc=dayId.replace(/'/g,"\\'");
     return`<div class="plans-ex-row">
       <div style="flex:1"><div class="plans-ex-name">${name}</div><div class="plans-ex-muscle">${ex.muscle}</div></div>
       <button class="plans-ex-del" onclick="removeExFromDay('${esc}',${idx})">&#10005;</button>
     </div>`;
-  }).join('');
+  }).join(''):`<div style="text-align:center;padding:60px 20px;color:var(--muted)">${q.trim()?'No exercises found':'No exercises yet.<br>Tap <b>+ Add Exercise</b> below.'}</div>`;
+  const deleteRow=isCustom&&!q.trim()?`<div style="text-align:center;padding:20px 20px 8px;cursor:pointer;color:var(--red);font-size:13px;font-weight:600;letter-spacing:.04em" onclick="if(confirm('Delete this day?'))deleteCustomDay('${esc}')">Delete Day</div>`:'';
+  content.innerHTML=rows+deleteRow;
 }
 function renderPlansAddMuscles(q){
   const content=document.getElementById('plans-modal-content');
@@ -1559,36 +1562,78 @@ function addExToSession(ex){
 // ══════════════════════════════════════════════
 //  RECORDS
 // ══════════════════════════════════════════════
+let recordsView='muscles';
+let recordsMuscle=null;
+
 function renderRecords(){
-  const byMuscle={};
-  allExercises().forEach(ex=>{
-    if(!byMuscle[ex.muscle])byMuscle[ex.muscle]=[];
-    if(!byMuscle[ex.muscle].find(e=>e.name===ex.name))byMuscle[ex.muscle].push(ex);
-  });
-  const muscles=MUSCLE_ORDER.filter(m=>byMuscle[m]);
-  document.getElementById('records-body').innerHTML=muscles.map((muscle,mi)=>{
-    const icon=MUSCLE_ICONS[muscle]||'•';const isOpen=mi<2;
-    return`<div class="muscle-section">
-      <div class="muscle-header" onclick="toggleMuscle(this)">
-        <div class="muscle-header-left"><span class="muscle-icon">${icon}</span><span class="muscle-name">${muscle}</span></div>
-        <span class="muscle-chevron ${isOpen?'open':''}">&#9660;</span>
-      </div>
-      <div style="display:${isOpen?'block':'none'}">
-        ${byMuscle[muscle].map(ex=>{
-          const pr=S.prs[ex.name];const r=resolveEx(ex);
-          return`<div class="exercise-record-row">
-            <div><div class="er-name">${ex.name}</div><div class="er-target">${r.targetSets} &middot; ${r.targetReps}${r.targetWeight?` &middot; ${r.targetWeight}lbs`:''}</div></div>
-            <div class="er-pr">${pr?`<div class="er-pr-val">${pr.weight}lbs</div><div class="er-pr-date">&times; ${pr.reps} reps &middot; ${shortDate(pr.date)}</div>`:`<div class="er-no-pr">No PR yet</div>`}</div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-  }).join('');
+  const inp=document.getElementById('records-search');
+  if(inp)inp.value='';
+  recordsView='muscles';
+  recordsMuscle=null;
+  renderRecordsMuscleGrid('');
 }
-function toggleMuscle(header){
-  const body=header.nextElementSibling;const chev=header.querySelector('.muscle-chevron');
-  const open=body.style.display!=='none';
-  body.style.display=open?'none':'block';chev.classList.toggle('open',!open);
+function renderRecordsMuscleGrid(q){
+  recordsView='muscles';
+  const body=document.getElementById('records-scroll-body');
+  const all=allExercises();
+  let content;
+  if(q.trim()){
+    const qLow=q.toLowerCase();
+    const matches=all.filter(e=>e.name.toLowerCase().includes(qLow)||e.muscle.toLowerCase().includes(qLow));
+    matches.sort((a,b)=>a.name.localeCompare(b.name));
+    content=buildRecordsExList(matches);
+  }else{
+    content=`<div class="lib-muscle-grid">${MUSCLE_ORDER.map(m=>{
+      const count=all.filter(e=>e.muscle===m).length;
+      const icon=MUSCLE_ICONS[m]||'•';
+      const hasPR=all.filter(e=>e.muscle===m).some(e=>S.prs[e.name]);
+      return`<div class="lib-muscle-card" onclick="selectRecordsMuscle('${m}')">
+        <div class="lib-muscle-icon">${icon}</div>
+        <div class="lib-muscle-name">${m}</div>
+        <div class="lib-muscle-count">${count} exercise${count!==1?'s':''}${hasPR?' · PR':''}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+  body.innerHTML=`<div class="status-pad"></div>
+    <div class="page-head"><div class="page-head-title">Records</div><div class="page-head-sub">PRs &amp; recommended ranges</div></div>
+    ${content}<div style="height:16px"></div>`;
+}
+function selectRecordsMuscle(muscle){
+  recordsView='exercises';
+  recordsMuscle=muscle;
+  const inp=document.getElementById('records-search');
+  if(inp)inp.value='';
+  renderRecordsExercises(muscle,'');
+}
+function renderRecordsExercises(muscle,q){
+  const body=document.getElementById('records-scroll-body');
+  const icon=MUSCLE_ICONS[muscle]||'•';
+  let exs=allExercises().filter(e=>e.muscle===muscle);
+  if(q.trim())exs=exs.filter(e=>e.name.toLowerCase().includes(q.toLowerCase()));
+  exs.sort((a,b)=>a.name.localeCompare(b.name));
+  body.innerHTML=`<div class="status-pad"></div>
+    <div style="display:flex;align-items:center;padding:0 20px 16px;gap:8px">
+      <button onclick="renderRecords()" style="background:none;border:none;color:var(--accent);font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:2px;flex-shrink:0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+      <div style="flex:1;font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1">${icon} ${muscle}</div>
+    </div>
+    ${buildRecordsExList(exs)}<div style="height:16px"></div>`;
+}
+function buildRecordsExList(exs){
+  if(!exs.length)return`<div style="text-align:center;padding:60px 20px;color:var(--muted)">No exercises found</div>`;
+  return`<div style="margin:0 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+    ${exs.map((ex,i)=>{
+      const pr=S.prs[ex.name];const r=resolveEx(ex);
+      return`<div class="exercise-record-row"${i>0?' style="border-top:1px solid var(--border)"':''}>
+        <div><div class="er-name">${ex.name}</div><div class="er-target">${r.targetSets} &middot; ${r.targetReps}${r.targetWeight?` &middot; ${r.targetWeight}lbs`:''}</div></div>
+        <div class="er-pr">${pr?`<div class="er-pr-val">${pr.weight}lbs</div><div class="er-pr-date">&times; ${pr.reps} reps &middot; ${shortDate(pr.date)}</div>`:`<div class="er-no-pr">No PR yet</div>`}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function filterRecordsSearch(q){
+  if(recordsView==='muscles')renderRecordsMuscleGrid(q);
+  else renderRecordsExercises(recordsMuscle,q);
 }
 
 // ══════════════════════════════════════════════
