@@ -24,7 +24,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .app{display:flex;flex-direction:column;width:100%;height:100%;max-width:100vw;overflow:hidden}
 .page-container{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:none;position:relative}
 /* NAV */
-.nav{flex-shrink:0;background:rgba(13,13,13,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(8px + var(--sb))}
+.nav{flex-shrink:0;background:rgba(13,13,13,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:10px 0 calc(14px + env(safe-area-inset-bottom,0px))}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--muted);font-family:'Barlow',sans-serif;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;padding:4px 0;transition:color .18s}
 .nav-btn.active{color:var(--accent)}
 .nav-btn svg{width:21px;height:21px;stroke-width:1.8}
@@ -32,9 +32,9 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .nav-btn.active .nav-dot{opacity:1}
 /* PAGES */
 .page{display:none}.page.active{display:block}
-.status-pad{height:calc(48px + var(--st))}
+.status-pad{display:none}
 /* HEADERS */
-.page-head{padding:0 20px 16px}
+.page-head{padding:calc(env(safe-area-inset-top,0px) + 16px) 20px 16px}
 .page-head-title{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:800;letter-spacing:.02em;line-height:1;text-transform:uppercase;color:var(--text-head,var(--text))}
 .page-head-sub{font-size:12px;color:var(--muted2);margin-top:3px}
 .section-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0 20px;margin-bottom:8px;margin-top:20px}
@@ -334,7 +334,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 #records-scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior:none;min-height:0}
 #records-scroll-body::-webkit-scrollbar{display:none}
 .records-search-bar{flex-shrink:0;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--bg)}
-.records-sticky-header{position:sticky;top:0;z-index:10;background:var(--bg);padding:0 20px 14px;display:flex;align-items:center;gap:8px}
+.records-sticky-header{position:sticky;top:0;z-index:10;background:var(--bg);padding:calc(env(safe-area-inset-top,0px) + 12px) 20px 14px;display:flex;align-items:center;gap:8px}
 /* LIBRARY RENAME */
 .lib-ex-rename-bar{padding:8px 14px 12px;border-top:1px solid var(--border);display:none;align-items:center;gap:8px}
 .lib-ex-rename-bar.open{display:flex}
@@ -363,7 +363,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 
   <!-- ▌LOG ▌ -->
   <div class="page active" id="page-log">
-   <div class="status-pad"></div>
    <div id="log-home">
     <div class="page-head">
      <div class="page-head-title">Log</div>
@@ -395,7 +394,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 
   <!-- ▌HISTORY ▌ -->
   <div class="page" id="page-history">
-   <div class="status-pad"></div>
    <div class="page-head">
     <div class="page-head-title">History</div>
     <div class="page-head-sub" id="history-sub"></div>
@@ -411,7 +409,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 
   <!-- ▌SETTINGS ▌ -->
   <div class="page" id="page-settings">
-   <div class="status-pad"></div>
    <div class="page-head">
     <div class="page-head-title">Settings</div>
     <div class="page-head-sub">Profile, preferences &amp; library</div>
@@ -1514,8 +1511,7 @@ function selectDay(dayId){
 function renderActiveSession(){
   const def=allDayDefs().find(d=>d.id===S.currentSession.dayId);
   document.getElementById('log-active').innerHTML=`
-    <div class="status-pad"></div>
-    <button class="back-btn" onclick="backToDaySelect()">
+    <button class="back-btn" onclick="backToDaySelect()" style="padding-top:calc(env(safe-area-inset-top,0px) + 14px)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
       ${def?def.label:'Workout'}
     </button>
@@ -1886,8 +1882,7 @@ function renderRecordsMuscleGrid(q){
       </div>`;
     }).join('')}</div>`;
   }
-  body.innerHTML=`<div class="status-pad"></div>
-    <div class="page-head"><div class="page-head-title">Records</div><div class="page-head-sub">PRs &amp; recommended ranges</div></div>
+  body.innerHTML=`<div class="page-head"><div class="page-head-title">Records</div><div class="page-head-sub">PRs &amp; recommended ranges</div></div>
     ${content}<div style="height:16px"></div>`;
 }
 function selectRecordsMuscle(muscle){
@@ -1903,8 +1898,7 @@ function renderRecordsExercises(muscle,q){
   let exs=allExercises().filter(e=>e.muscle===muscle);
   if(q.trim())exs=exs.filter(e=>e.name.toLowerCase().includes(q.toLowerCase()));
   exs.sort((a,b)=>a.name.localeCompare(b.name));
-  body.innerHTML=`<div class="status-pad"></div>
-    <div class="records-sticky-header">
+  body.innerHTML=`<div class="records-sticky-header">
       <button onclick="renderRecords()" style="background:none;border:none;color:var(--accent);font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:2px;flex-shrink:0">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
       <div style="flex:1;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1">${icon} ${muscle}</div>
