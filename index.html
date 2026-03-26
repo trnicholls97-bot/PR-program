@@ -500,25 +500,25 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
    <!-- THEMES -->
    <div class="section-label">Themes</div>
    <div class="settings-group">
-    <div class="settings-row" id="theme-row-dark">
-     <div style="display:flex;align-items:center;gap:12px;flex:1" onclick="applyTheme('dark')">
+    <div class="settings-row" style="cursor:pointer" onclick="applyTheme('dark')">
+     <div style="display:flex;align-items:center;gap:14px;flex:1">
       <div id="radio-dark" class="theme-radio"></div>
       <div>
        <div class="settings-row-label">Dark Theme</div>
        <div class="settings-row-sub">iOS-style dark appearance</div>
       </div>
      </div>
-     <button onclick="event.stopPropagation();openThemeModal('dark')" style="background:none;border:none;color:var(--accent);font-size:20px;padding:4px 8px;cursor:pointer">&#8250;</button>
+     <button onclick="event.stopPropagation();openThemeModal('dark')" style="background:none;border:none;color:var(--muted);font-size:22px;padding:4px 0 4px 12px;cursor:pointer;line-height:1">&#8250;</button>
     </div>
-    <div class="settings-row" id="theme-row-light">
-     <div style="display:flex;align-items:center;gap:12px;flex:1" onclick="applyTheme('light')">
+    <div class="settings-row" style="cursor:pointer" onclick="applyTheme('light')">
+     <div style="display:flex;align-items:center;gap:14px;flex:1">
       <div id="radio-light" class="theme-radio"></div>
       <div>
        <div class="settings-row-label">Light Theme</div>
        <div class="settings-row-sub">iOS-style light appearance</div>
       </div>
      </div>
-     <button onclick="event.stopPropagation();openThemeModal('light')" style="background:none;border:none;color:var(--accent);font-size:20px;padding:4px 8px;cursor:pointer">&#8250;</button>
+     <button onclick="event.stopPropagation();openThemeModal('light')" style="background:none;border:none;color:var(--muted);font-size:22px;padding:4px 0 4px 12px;cursor:pointer;line-height:1">&#8250;</button>
     </div>
    </div>
 
@@ -672,7 +672,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
    Back
   </button>
   <div class="lib-modal-title" id="theme-modal-title">Dark Theme</div>
-  <button class="theme-active-btn" id="theme-modal-activate-btn" onclick="activateCurrentTheme()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;font-weight:700;padding:6px 12px;cursor:pointer;flex-shrink:0">Use Theme</button>
  </div>
  <div class="lib-modal-content" id="theme-modal-content"></div>
 </div>
