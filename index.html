@@ -21,9 +21,9 @@
   --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
-html,body{width:100%;height:100%;height:100dvh;overflow:hidden;touch-action:manipulation;margin:0;padding:0;background:#0d0d0d}
-body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;position:fixed;inset:0;height:100dvh}
-.app{display:flex;flex-direction:column;width:100%;height:100%;max-width:100vw;overflow:hidden}
+html{height:100%;overflow:hidden;touch-action:manipulation;margin:0;padding:0;background:#0d0d0d}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;position:fixed;inset:0;overflow:hidden;margin:0;padding:0}
+.app{display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden}
 .page-container{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:none;position:relative}
 /* NAV */
 .nav{flex-shrink:0;background:rgba(13,13,13,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:10px 0;padding-bottom:max(20px,env(safe-area-inset-bottom))}
@@ -353,6 +353,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .theme-hex-row{display:flex;gap:8px;align-items:center}
 .theme-hex-preview{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);flex-shrink:0}
 .theme-active-badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:6px;padding:3px 7px}
+.theme-radio{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .2s}
+.theme-radio.active{background:var(--accent);border-color:var(--accent)}
 </style>
     <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -381,7 +383,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
       <div class="cal-banner-val" id="log-cal-val">—</div>
      </div>
     </div>
-    <div style="height:16px"></div>
    </div>
    <div id="log-active" style="display:none"></div>
   </div>
@@ -500,24 +501,24 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
    <!-- THEMES -->
    <div class="section-label">Themes</div>
    <div class="settings-group">
-    <div class="settings-row" style="cursor:pointer" onclick="openThemeModal('dark')">
+    <div class="settings-row" style="cursor:pointer" onclick="applyTheme('dark')">
      <div>
       <div class="settings-row-label">Dark Theme</div>
       <div class="settings-row-sub">iOS-style dark appearance</div>
      </div>
-     <div style="display:flex;align-items:center;gap:8px">
-      <span class="theme-active-badge" id="dark-active-badge" style="display:none">Active</span>
-      <span style="color:var(--accent)">&#8250;</span>
+     <div style="display:flex;align-items:center;gap:12px">
+      <div class="theme-radio" id="dark-theme-radio"></div>
+      <button onclick="event.stopPropagation();openThemeModal('dark')" style="background:none;border:none;color:var(--accent);cursor:pointer;padding:4px;font-size:16px;-webkit-tap-highlight-color:transparent">&#8250;</button>
      </div>
     </div>
-    <div class="settings-row" style="cursor:pointer" onclick="openThemeModal('light')">
+    <div class="settings-row" style="cursor:pointer" onclick="applyTheme('light')">
      <div>
       <div class="settings-row-label">Light Theme</div>
       <div class="settings-row-sub">iOS-style light appearance</div>
      </div>
-     <div style="display:flex;align-items:center;gap:8px">
-      <span class="theme-active-badge" id="light-active-badge" style="display:none">Active</span>
-      <span style="color:var(--accent)">&#8250;</span>
+     <div style="display:flex;align-items:center;gap:12px">
+      <div class="theme-radio" id="light-theme-radio"></div>
+      <button onclick="event.stopPropagation();openThemeModal('light')" style="background:none;border:none;color:var(--accent);cursor:pointer;padding:4px;font-size:16px;-webkit-tap-highlight-color:transparent">&#8250;</button>
      </div>
     </div>
    </div>
@@ -1039,10 +1040,10 @@ function isDarkColor(hex){
 }
 function updateThemeBadges(){
   const active=S.themes&&S.themes.active;
-  const db=document.getElementById('dark-active-badge');
-  const lb=document.getElementById('light-active-badge');
-  if(db)db.style.display=active==='dark'?'':'none';
-  if(lb)lb.style.display=active==='light'?'':'none';
+  const darkRadio=document.getElementById('dark-theme-radio');
+  const lightRadio=document.getElementById('light-theme-radio');
+  if(darkRadio)darkRadio.classList.toggle('active',active==='dark');
+  if(lightRadio)lightRadio.classList.toggle('active',active==='light');
 }
 function openThemeModal(mode){
   themeModalMode=mode;themeExpandedKey=null;
@@ -1484,7 +1485,11 @@ function filterLibrarySearch(q){
 // ══════════════════════════════════════════════
 function renderDayGrid(){
   document.getElementById('log-date-sub').textContent=todayStr();
-  document.getElementById('day-grid').innerHTML=allDayDefs().map(d=>{
+  const allDays=allDayDefs();
+  const regularDays=allDays.filter(d=>d.id!=='misc');
+  const miscDay=allDays.find(d=>d.id==='misc');
+  const daysToRender=[...regularDays,...(miscDay?[miscDay]:[])];
+  document.getElementById('day-grid').innerHTML=daysToRender.map(d=>{
     const active=S.currentSession&&S.currentSession.dayId===d.id;
     const count=(S.dayPlans[d.id]||[]).length;
     const cls=(d.id==='misc'?'day-card misc':'day-card')+(active?' active-session':'');
