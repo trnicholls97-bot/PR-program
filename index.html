@@ -352,8 +352,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .theme-hex-row{display:flex;gap:8px;align-items:center}
 .theme-hex-preview{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);flex-shrink:0}
 .theme-active-badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:6px;padding:3px 7px}
-.theme-radio{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .2s}
-.theme-radio.active{background:var(--accent);border-color:var(--accent)}
+.theme-radio{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .2s;cursor:pointer}
+.theme-radio.active{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-dim)}
 </style>
     <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -500,25 +500,25 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
    <!-- THEMES -->
    <div class="section-label">Themes</div>
    <div class="settings-group">
-    <div class="settings-row" style="cursor:pointer" onclick="applyTheme('dark')">
-     <div>
-      <div class="settings-row-label">Dark Theme</div>
-      <div class="settings-row-sub">iOS-style dark appearance</div>
+    <div class="settings-row" id="theme-row-dark">
+     <div style="display:flex;align-items:center;gap:12px;flex:1" onclick="applyTheme('dark')">
+      <div id="radio-dark" class="theme-radio"></div>
+      <div>
+       <div class="settings-row-label">Dark Theme</div>
+       <div class="settings-row-sub">iOS-style dark appearance</div>
+      </div>
      </div>
-     <div style="display:flex;align-items:center;gap:12px">
-      <div class="theme-radio" id="dark-theme-radio"></div>
-      <button onclick="event.stopPropagation();openThemeModal('dark')" style="background:none;border:none;color:var(--accent);cursor:pointer;padding:4px;font-size:16px;-webkit-tap-highlight-color:transparent">&#8250;</button>
-     </div>
+     <button onclick="event.stopPropagation();openThemeModal('dark')" style="background:none;border:none;color:var(--accent);font-size:20px;padding:4px 8px;cursor:pointer">&#8250;</button>
     </div>
-    <div class="settings-row" style="cursor:pointer" onclick="applyTheme('light')">
-     <div>
-      <div class="settings-row-label">Light Theme</div>
-      <div class="settings-row-sub">iOS-style light appearance</div>
+    <div class="settings-row" id="theme-row-light">
+     <div style="display:flex;align-items:center;gap:12px;flex:1" onclick="applyTheme('light')">
+      <div id="radio-light" class="theme-radio"></div>
+      <div>
+       <div class="settings-row-label">Light Theme</div>
+       <div class="settings-row-sub">iOS-style light appearance</div>
+      </div>
      </div>
-     <div style="display:flex;align-items:center;gap:12px">
-      <div class="theme-radio" id="light-theme-radio"></div>
-      <button onclick="event.stopPropagation();openThemeModal('light')" style="background:none;border:none;color:var(--accent);cursor:pointer;padding:4px;font-size:16px;-webkit-tap-highlight-color:transparent">&#8250;</button>
-     </div>
+     <button onclick="event.stopPropagation();openThemeModal('light')" style="background:none;border:none;color:var(--accent);font-size:20px;padding:4px 8px;cursor:pointer">&#8250;</button>
     </div>
    </div>
 
@@ -1038,9 +1038,9 @@ function isDarkColor(hex){
   }catch(e){return true;}
 }
 function updateThemeBadges(){
-  const active=S.themes&&S.themes.active;
-  const darkRadio=document.getElementById('dark-theme-radio');
-  const lightRadio=document.getElementById('light-theme-radio');
+  const active=(S.themes&&S.themes.active)||'dark';
+  const darkRadio=document.getElementById('radio-dark');
+  const lightRadio=document.getElementById('radio-light');
   if(darkRadio)darkRadio.classList.toggle('active',active==='dark');
   if(lightRadio)lightRadio.classList.toggle('active',active==='light');
 }
