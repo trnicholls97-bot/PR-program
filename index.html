@@ -93,15 +93,15 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .set-row{display:grid;grid-template-columns:28px auto 1fr 1fr 38px;align-items:center;gap:5px;padding:9px 14px;border-bottom:1px solid var(--border);transition:background .2s}
 .set-row:last-of-type{border-bottom:none}
 .set-row.pr{background:rgba(255,107,53,.06)}
-.set-row.warmup-row{background:rgba(255,200,50,.04)}
+.set-row.warmup-row{background:rgba(255,200,50,.12)}
 .set-num{font-size:11px;color:var(--muted);font-weight:700;text-align:center}
 .warmup-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:9px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;letter-spacing:0}
-.warmup-btn.active{background:rgba(255,200,50,.2);border-color:rgba(255,200,50,.5);color:#ffc832}
+.warmup-btn.active{background:rgba(255,200,50,.3);border-color:rgba(255,200,50,.7);color:#ffc832;font-weight:900}
 .set-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;font-weight:500;padding:7px 8px;width:100%;text-align:center;outline:none;transition:border-color .15s;-webkit-appearance:none}
 .set-input:focus{border-color:var(--accent)}
 .set-input::placeholder{color:var(--muted)}
 .pr-badge{background:var(--accent);color:#fff;font-size:8px;font-weight:800;letter-spacing:.08em;padding:3px 5px;border-radius:5px;text-transform:uppercase;text-align:center;line-height:1.2;white-space:nowrap}
-.wu-badge{background:rgba(255,200,50,.2);color:#ffc832;border:1px solid rgba(255,200,50,.4);font-size:8px;font-weight:800;letter-spacing:.06em;padding:2px 5px;border-radius:5px;text-transform:uppercase;white-space:nowrap}
+.wu-badge{background:rgba(255,200,50,.25);color:#ffc832;border:1px solid rgba(255,200,50,.5);font-size:8px;font-weight:800;letter-spacing:.06em;padding:3px 6px;border-radius:5px;text-transform:uppercase;white-space:nowrap}
 .add-set-btn{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;padding:11px;background:none;border:none;border-top:1px solid var(--border);color:var(--accent);font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .12s}
 .add-set-btn:active{background:var(--accent-dim)}
 .add-ex-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:14px;background:var(--surface);border:1px dashed var(--border);color:var(--accent);font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;transition:all .15s}
@@ -1679,7 +1679,7 @@ function buildSetRow(ei,si,set,isCardio){
   const prBadgeHtml=isWarmup?`<div class="wu-badge">WU</div>`:prStatus==='up'?`<div style="background:#39d98a;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">+ </div>`:prStatus==='equal'?`<div style="background:#007aff;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">= </div>`:prStatus==='down'?`<div style="background:#ff4d6d;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">− </div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
   row.className=`set-row${pr?' pr':''}${isWarmup?' warmup-row':''}`;row.id=`set-${ei}-${si}`;
 
-  const restHtml=set.rest?`<div style="font-size:9px;color:var(--muted);margin-top:2px">${set.rest}m rest</div>`:'';
+  const restHtml=set.rest?`<div style="font-size:9px;color:var(--accent);margin-top:2px;font-weight:600">${set.rest}m rest</div>`:'';
 
   if(isDumbbell){
     row.innerHTML=`
