@@ -1768,7 +1768,7 @@ function updateSet(ei,si,field,val){
   row.classList.toggle('pr',pr&&!isWarmup);
   if(isDumb&&field==='weight'){
     const dbDisplay=row.querySelector('span:nth-child(3)');
-    if(dbDisplay)dbDisplay.textContent=set.weight?set.weight*2+''':'-';
+    if(dbDisplay)dbDisplay.textContent=set.weight?set.weight*2+'':'-';
   }
   const prStatus=!isWarmup&&set.weight&&set.reps?getPRStatus(name,weightForPR,set.reps):null;
   const badge=row.querySelector('div:last-child');
