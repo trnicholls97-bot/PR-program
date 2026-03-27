@@ -813,7 +813,7 @@ function isoDate(ts){return new Date(ts).toISOString().slice(0,10);}
 function durStr(ms){const m=Math.round(ms/60000);return m<60?`${m}m`:`${Math.floor(m/60)}h ${m%60}m`;}
 function e1rm(w,r){return(w&&r)?Math.round(w*(1+r/30)):0;}
 function isPR(name,w,r){if(!w||!r)return false;const v=e1rm(w,r),p=S.prs[name];return!p||v>p.e1rm;}
-function recordPR(name,w,r){S.prs[name]={weight:w,reps:r,e1rm:e1rm(w,r),date:Date.now()};}
+function recordPR(name,w,r){const isDumb=isDumbbellExercise(name);const displayW=isDumb?w*2:w;S.prs[name]={weight:displayW,reps:r,e1rm:e1rm(displayW,r),date:Date.now()};}
 
 function allDayDefs(){
   const ov=S.dayIconOverrides||{};
@@ -1638,12 +1638,18 @@ function swapExercise(ei,newName){
   saveState();renderSessionExercises();
 }
 
+function isDumbbellExercise(name){
+  return/\b(dumbbell|db)\b/i.test(name);
+}
+
 function buildSetRow(ei,si,set,isCardio){
   const row=document.createElement('div');
   if(isCardio===undefined){
     const ex=S.currentSession.exercises[ei];
     isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
   }
+  const exName=S.currentSession.exercises[ei].name;
+  const isDumbbell=!isCardio&&isDumbbellExercise(exName);
   if(isCardio){
     row.className='set-row cardio-row';row.id=`set-${ei}-${si}`;
     row.innerHTML=`
@@ -1655,14 +1661,29 @@ function buildSetRow(ei,si,set,isCardio){
     return row;
   }
   const isWarmup=set.warmup||false;
-  const pr=!isWarmup&&isPR(S.currentSession.exercises[ei].name,set.weight,set.reps);
+  const displayWeight=isDumbbell?set.weight*2||'':set.weight||'';
+  const pr=!isWarmup&&isPR(exName,isDumbbell?set.weight*2:set.weight,set.reps);
   row.className=`set-row${pr?' pr':''}${isWarmup?' warmup-row':''}`;row.id=`set-${ei}-${si}`;
-  row.innerHTML=`
-    <div class="set-num">${si+1}</div>
-    <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
-    <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)">
-    <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
-    ${isWarmup?`<div class="wu-badge">WU</div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>'}`;
+
+  if(isDumbbell){
+    row.innerHTML=`
+      <div class="set-num">${si+1}</div>
+      <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
+      <div style="display:flex;align-items:center;gap:6px;flex:1">
+        <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)" style="flex:1">
+        <span style="font-size:12px;color:var(--muted);white-space:nowrap">× 2</span>
+        <span style="font-size:13px;color:var(--muted2);font-weight:500;min-width:30px;text-align:right">${displayWeight?displayWeight+'':'-'}</span>
+      </div>
+      <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
+      ${isWarmup?`<div class="wu-badge">WU</div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>'}`;
+  }else{
+    row.innerHTML=`
+      <div class="set-num">${si+1}</div>
+      <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
+      <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)">
+      <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
+      ${isWarmup?`<div class="wu-badge">WU</div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>'}`;
+  }
   return row;
 }
 
@@ -1700,15 +1721,21 @@ function updateSet(ei,si,field,val){
   const set=S.currentSession.exercises[ei].sets[si];
   set[field]=val?parseFloat(val):'';
   const name=S.currentSession.exercises[ei].name;
+  const isDumb=isDumbbellExercise(name);
   const row=document.getElementById(`set-${ei}-${si}`);if(!row)return;
   const isWarmup=set.warmup;
-  const pr=!isWarmup&&isPR(name,set.weight,set.reps);
+  const weightForPR=isDumb?set.weight*2:set.weight;
+  const pr=!isWarmup&&isPR(name,weightForPR,set.reps);
   row.classList.toggle('pr',pr&&!isWarmup);
+  if(isDumb&&field==='weight'){
+    const dbDisplay=row.querySelector('span:nth-child(3)');
+    if(dbDisplay)dbDisplay.textContent=set.weight?set.weight*2+''':'-';
+  }
   const badge=row.querySelector('div:last-child');
   if(badge)badge.outerHTML=isWarmup?`<div class="wu-badge">WU</div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
   const block=document.getElementById(`ex-block-${ei}`);
   if(block){
-    const anyPR=S.currentSession.exercises[ei].sets.some(s=>!s.warmup&&isPR(name,s.weight,s.reps));
+    const anyPR=S.currentSession.exercises[ei].sets.some(s=>!s.warmup&&isPR(name,isDumb?s.weight*2:s.weight,s.reps));
     const existing=block.querySelector('.ex-actions .pr-badge');
     if(anyPR&&!existing)block.querySelector('.icon-btn.del').insertAdjacentHTML('beforebegin','<span class="pr-badge">PR</span>');
     else if(!anyPR&&existing)existing.remove();
@@ -1751,10 +1778,14 @@ function finishWorkout(){
       });
     }else{
       ex.sets.forEach(s=>{
-        if(!s.warmup&&s.weight&&s.reps&&isPR(ex.name,s.weight,s.reps)){
-          const old=S.prs[ex.name];
-          newPRs.push({name:ex.name,oldWeight:old?old.weight:null,oldReps:old?old.reps:null,newWeight:s.weight,newReps:s.reps});
-          recordPR(ex.name,s.weight,s.reps);
+        if(!s.warmup&&s.weight&&s.reps){
+          const isDumb=isDumbbellExercise(ex.name);
+          const weightForPR=isDumb?s.weight*2:s.weight;
+          if(isPR(ex.name,weightForPR,s.reps)){
+            const old=S.prs[ex.name];
+            newPRs.push({name:ex.name,oldWeight:old?old.weight:null,oldReps:old?old.reps:null,newWeight:weightForPR,newReps:s.reps});
+            recordPR(ex.name,s.weight,s.reps);
+          }
         }
       });
     }
