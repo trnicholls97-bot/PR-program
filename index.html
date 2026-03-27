@@ -1733,7 +1733,7 @@ function buildSetRow(ei,si,set,isCardio){
   const weightForPR=isDumbbell?set.weight*2:set.weight;
   const pr=!isWarmup&&isPR(exName,weightForPR,set.reps);
   const prStatus=!isWarmup&&set.weight&&set.reps?getPRStatus(exName,weightForPR,set.reps):null;
-  const prBadgeHtml=isWarmup?`<div class="wu-badge">WU</div>`:prStatus==='up'?`<div style="background:#39d98a;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">+ </div>`:prStatus==='equal'?`<div style="background:#007aff;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">= </div>`:prStatus==='down'?`<div style="background:#ff4d6d;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">− </div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
+  const prBadgeHtml=isWarmup?'<div></div>':prStatus==='up'?`<div style="background:#39d98a;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">+ </div>`:prStatus==='equal'?`<div style="background:#007aff;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">= </div>`:prStatus==='down'?`<div style="background:#ff4d6d;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">− </div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
   row.className=`set-row${pr?' pr':''}${isWarmup?' warmup-row':''}`;row.id=`set-${ei}-${si}`;
 
   const restHtml=set.rest?`<div style="font-size:9px;color:var(--accent);margin-top:2px;font-weight:600">${set.rest}m rest</div>`:'';
@@ -1775,7 +1775,7 @@ function toggleWarmup(ei,si){
   row.classList.toggle('warmup-row',isWarmup);row.classList.toggle('pr',false);
   const wBtn=row.querySelector('.warmup-btn');if(wBtn)wBtn.classList.toggle('active',isWarmup);
   const badge=row.querySelector('div:last-child');
-  if(badge)badge.outerHTML=isWarmup?`<div class="wu-badge">WU</div>`:`<div></div>`;
+  if(badge)badge.outerHTML='<div></div>';
   saveState();
 }
 
@@ -2057,7 +2057,7 @@ function addExToSession(ex){
   const resolved=resolveEx(ex);
   const isCardio=CARDIO_EXERCISES.has(resolved.name)||resolved.muscle==='Cardio';
   const initSet=isCardio?{time:'',speed:'',resistance:'',ts:Date.now()}:{weight:'',reps:'',ts:Date.now(),warmup:false};
-  S.currentSession.exercises.push({...resolved,timestamp:Date.now(),sets:[initSet]});
+  S.currentSession.exercises.unshift({...resolved,timestamp:Date.now(),sets:[initSet]});
   saveState();renderSessionExercises();
 }
 
