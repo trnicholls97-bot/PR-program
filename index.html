@@ -2011,12 +2011,14 @@ function addExToSession(ex){
 // ══════════════════════════════════════════════
 let recordsView='muscles';
 let recordsMuscle=null;
+let recordsExpandedExercises={}; // Track which exercise rows are expanded: {exerciseName: true/false}
 
 function renderRecords(){
   const inp=document.getElementById('records-search');
   if(inp)inp.value='';
   recordsView='muscles';
   recordsMuscle=null;
+  recordsExpandedExercises={}; // Reset expanded state when going back to muscle view
   renderRecordsMuscleGrid('');
 }
 function renderRecordsMuscleGrid(q){
@@ -2062,14 +2064,42 @@ function renderRecordsExercises(muscle,q){
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
       <div style="flex:1;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1">${icon} ${muscle}</div>
     </div>
-    ${buildRecordsExList(exs)}<div style="height:16px"></div>`;
+    ${buildRecordsExList(exs,muscle)}<div style="height:16px"></div>`;
 }
-function buildRecordsExList(exs){
+function getHistoricalSets(exerciseName){
+  const sets=[];
+  S.workouts.forEach(w=>{
+    w.exercises.forEach((ex,ei)=>{
+      if(ex.name===exerciseName){
+        ex.sets.forEach((s,si)=>{
+          if(s.weight||s.reps||s.time||s.speed){
+            sets.push({weight:s.weight,reps:s.reps,time:s.time,speed:s.speed,resistance:s.resistance,warmup:s.warmup,workoutDate:shortDate(w.startTime),workoutIndex:w.startTime});
+          }
+        });
+      }
+    });
+  });
+  return sets.sort((a,b)=>b.workoutIndex-a.workoutIndex);
+}
+
+function toggleRecordsExpand(exName,muscleGroup){
+  // Close other expanded exercises in the same muscle group
+  const exercisesInMuscle=allExercises().filter(e=>e.muscle===muscleGroup);
+  exercisesInMuscle.forEach(e=>{
+    if(e.name!==exName)recordsExpandedExercises[e.name]=false;
+  });
+  recordsExpandedExercises[exName]=!recordsExpandedExercises[exName];
+  renderRecordsExercises(muscleGroup,'');
+}
+
+function buildRecordsExList(exs,muscleGroup=''){
   if(!exs.length)return`<div style="text-align:center;padding:60px 20px;color:var(--muted)">No exercises found</div>`;
   return`<div style="margin:0 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden">
     ${exs.map((ex,i)=>{
       const isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
       const pr=isCardio?(S.cardioPrs&&S.cardioPrs[ex.name]):S.prs[ex.name];
+      const isExpanded=recordsExpandedExercises[ex.name];
+      const historicalSets=isExpanded?getHistoricalSets(ex.name):[];
       let prHtml;
       if(isCardio){
         prHtml=pr
@@ -2080,10 +2110,17 @@ function buildRecordsExList(exs){
           ?`<div class="er-pr-val">${pr.weight}lbs</div><div class="er-pr-date">&times; ${pr.reps} reps &middot; ${shortDate(pr.date)}</div>`
           :`<div class="er-no-pr">No PR yet</div>`;
       }
-      return`<div class="exercise-record-row"${i>0?' style="border-top:1px solid var(--border)"':''}>
+      const rowHtml=`<div class="exercise-record-row" style="${i>0?'border-top:1px solid var(--border);':''}cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 14px" onclick="toggleRecordsExpand('${ex.name}','${muscleGroup}')">
         <div><div class="er-name">${ex.name}</div></div>
-        <div class="er-pr">${prHtml}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="er-pr">${prHtml}</div>
+          <div style="font-size:16px;color:var(--muted2);transition:transform .2s">${isExpanded?'▼':'▶'}</div>
+        </div>
       </div>`;
+      const expandedHtml=isExpanded?`<div style="background:var(--surface2);padding:10px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted2)">
+        ${historicalSets.length?historicalSets.map((s,si)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;${si>0?'border-top:1px solid var(--border);':''}">${s.weight?`<span><strong>${s.weight}lbs</strong> × ${s.reps}</span>`:`<span>${s.time||'-'} min</span>`}<span>${s.workoutDate}</span></div>`).join(''):'<div style="padding:8px;color:var(--muted)">No sets logged</div>'}
+      </div>`:'';
+      return rowHtml+expandedHtml;
     }).join('')}
   </div>`;
 }
