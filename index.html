@@ -2215,14 +2215,15 @@ function renderHistoryList(filterDate){
   else{filtered=S.workouts.filter(w=>{const d=new Date(w.startTime);return d.getFullYear()===calYear&&d.getMonth()===calMonth;});}
 
   let html='';
-  // Show active session at top if exists and matches filter
-  if(S.currentSession&&(!filterDate||isoDate(S.currentSession.startTime)===filterDate)){
+
+  // Add active session at top if exists
+  if(S.currentSession){
     const def=allDayDefs().find(d=>d.id===S.currentSession.dayId);
     const icon=def?def.icon:'⚡';
     html+=`<div class="history-entry" style="border-color:var(--accent);background:var(--accent-dim,.1)">
       <div class="he-header">
-        <div><div class="he-day" style="color:var(--accent)">${icon} ${def?def.label:'Workout'} (In Progress)</div><div class="he-date">${shortDate(S.currentSession.startTime)} • Running</div></div>
-        <div class="he-badges"><div class="he-duration">${durStr(Date.now()-S.currentSession.startTime)}</div></div>
+        <div><div class="he-day" style="color:var(--accent)">${icon} ${def?def.label:'Workout'} (In Progress)</div></div>
+        <div class="he-duration">${durStr(Date.now()-S.currentSession.startTime)}</div>
       </div>
     </div>`;
   }
@@ -2232,11 +2233,12 @@ function renderHistoryList(filterDate){
     else{body.innerHTML=html;}
     return;
   }
+
   if(!S.workoutCollapsedStates)S.workoutCollapsedStates={};
   html+=filtered.map((w)=>{
     const realIdx=S.workouts.indexOf(w);
-    const stateKey=`${w.startTime}`;
-    const isCollapsed=S.workoutCollapsedStates[stateKey]||false;
+    const stateKey=''+w.startTime;
+    const isCollapsed=!!S.workoutCollapsedStates[stateKey];
     const def=allDayDefs().find(d=>d.id===w.dayId);const icon=def?def.icon:'⚡';
     const hasPR=w.exercises.some(ex=>ex.sets.some(s=>{const pr=S.prs[ex.name];return pr&&pr.date>=w.startTime&&pr.date<=w.endTime;}));
 
@@ -2268,21 +2270,22 @@ function renderHistoryList(filterDate){
         }).join('')
       : w.exercises.map(ex=>{const valid=ex.sets.filter(s=>s.weight||s.reps).length;return`<div class="he-exercise-row"><div>${ex.name}</div><div class="he-ex-sets">${valid} set${valid!==1?'s':''}</div></div>`;}).join('');
 
-    return`<div class="history-entry${detailed?' history-entry-detailed':''}">
-      <div class="he-header" style="cursor:pointer" onclick="toggleCollapseWorkout('${stateKey}')">
+    const headerHtml=`<div class="history-entry${detailed?' history-entry-detailed':''}">
+      <div class="he-header" onclick="toggleCollapseWorkout('${stateKey}')" style="cursor:pointer">
         <div><div class="he-day">${icon} ${w.dayLabel}</div><div class="he-date">${shortDate(w.startTime)} &middot; ${timeStr(w.startTime)}</div></div>
         <div class="he-badges">
           ${hasPR?`<span class="pr-badge">PR</span>`:''}
           <div class="he-duration">${durStr(w.duration)}</div>
-          <span style="font-size:18px;color:var(--muted2);margin:0 6px">${isCollapsed?'▶':'▼'}</span>
+          <span style="font-size:18px;margin-right:8px">${isCollapsed?'▶':'▼'}</span>
           <button class="he-del-btn" onclick="event.stopPropagation();deleteWorkout(${realIdx})">&#10005;</button>
         </div>
       </div>
       ${!isCollapsed?`<div class="he-body">${exDetail}
         ${w.calories?`<div class="he-cal-row"><div class="he-cal-label">&#128293; Est. burned</div><div class="he-cal-val">${w.calories.toLocaleString()} kcal</div></div>`:''}
-      </div>`:''}
-    </div>`;
+      </div>`:''}</div>`;
+    return headerHtml;
   }).join('');
+
   body.innerHTML=html;
 }
 
