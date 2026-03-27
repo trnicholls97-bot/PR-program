@@ -483,6 +483,17 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
       </div>
      </div>
     </div>
+    <!-- GOAL MODE - for syncing calorie targets to other apps -->
+    <div class="profile-row" style="grid-template-columns:1fr">
+     <div class="profile-field">
+      <label>Calorie Goal Mode</label>
+      <select id="prof-goal-mode" onchange="saveProfile()">
+       <option value="maintain">Maintain (at TDEE)</option>
+       <option value="cut">Cut (-500 kcal/day)</option>
+       <option value="bulk">Bulk (+500 kcal/day)</option>
+      </select>
+     </div>
+    </div>
    </div>
    <div id="calorie-result-block" style="display:none">
     <div class="calorie-result">
@@ -933,8 +944,11 @@ function saveProfile(){
     neck:document.getElementById('prof-neck').value,
     waist:document.getElementById('prof-waist').value,
     hip:document.getElementById('prof-hip').value,
+    goalMode:document.getElementById('prof-goal-mode').value,
   };
   saveState();updateTDEEDisplay();
+  // Sync calorie settings to Firebase if user is signed in
+  writeCaloricSettingsToFirebase();
 }
 function loadProfileInputs(){
   const p=S.profile;
@@ -948,6 +962,7 @@ function loadProfileInputs(){
   document.getElementById('prof-neck').value=p.neck||'';
   document.getElementById('prof-waist').value=p.waist||'';
   document.getElementById('prof-hip').value=p.hip||'';
+  document.getElementById('prof-goal-mode').value=p.goalMode||'maintain';
   updateFormulaFields();
   updateTDEEDisplay();
 }
@@ -981,6 +996,46 @@ function updateFormulaFields(){
   bfRow.style.display=(formula==='mifflin-lean'||formula==='katch')?'grid':'none';
   navyRows.style.display=(formula==='navy')?'block':'none';
   if(navyHipRow)navyHipRow.style.display=(formula==='navy'&&sex==='female')?'grid':'none';
+}
+
+// ══════════════════════════════════════════════
+//  CALORIE SYNC TO FIREBASE
+//  Writes calorie settings for other apps (Fuel tracker)
+// ══════════════════════════════════════════════
+async function writeCaloricSettingsToFirebase(){
+  // Only write if user is signed in and Firebase is available
+  if(!window.firebase||!firebase.auth().currentUser)return;
+
+  try{
+    const tdee=calcTDEE();
+    if(!tdee)return; // Can't sync without valid calorie calculation
+
+    const goalMode=document.getElementById('prof-goal-mode').value||'maintain';
+    let dailyCalorieTarget=tdee;
+
+    // Calculate target based on goal mode
+    if(goalMode==='cut')dailyCalorieTarget=tdee-500;
+    else if(goalMode==='bulk')dailyCalorieTarget=tdee+500;
+
+    // Only write valid positive numbers
+    if(dailyCalorieTarget<=0)return;
+
+    const uid=firebase.auth().currentUser.uid;
+    const db=firebase.firestore();
+
+    // Merge with existing user document to preserve other data
+    await db.collection('users').doc(uid).set({
+      calorieSettings:{
+        maintenanceCalories:tdee,
+        dailyCalorieTarget:dailyCalorieTarget,
+        goalMode:goalMode,
+        source:'workout_app',
+        updatedAt:new Date().toISOString()
+      }
+    },{merge:true});
+  }catch(err){
+    console.warn('Failed to sync calorie settings to Firebase:',err.message);
+  }
 }
 
 // ══════════════════════════════════════════════
