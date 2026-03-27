@@ -814,6 +814,17 @@ function durStr(ms){const m=Math.round(ms/60000);return m<60?`${m}m`:`${Math.flo
 function e1rm(w,r){return(w&&r)?Math.round(w*(1+r/30)):0;}
 function isPR(name,w,r){if(!w||!r)return false;const v=e1rm(w,r),p=S.prs[name];return!p||v>p.e1rm;}
 function recordPR(name,w,r){const isDumb=isDumbbellExercise(name);const displayW=isDumb?w*2:w;S.prs[name]={weight:displayW,reps:r,e1rm:e1rm(displayW,r),date:Date.now()};}
+function getPRStatus(name,w,r){
+  if(!w||!r)return null;
+  const prData=S.prs[name];
+  if(!prData)return'new';
+  if(prData.reps===r){
+    if(w>prData.weight)return'up';
+    if(w===prData.weight)return'equal';
+    if(w<prData.weight)return'down';
+  }
+  return null;
+}
 
 function allDayDefs(){
   const ov=S.dayIconOverrides||{};
@@ -1662,7 +1673,10 @@ function buildSetRow(ei,si,set,isCardio){
   }
   const isWarmup=set.warmup||false;
   const displayWeight=isDumbbell?set.weight*2||'':set.weight||'';
-  const pr=!isWarmup&&isPR(exName,isDumbbell?set.weight*2:set.weight,set.reps);
+  const weightForPR=isDumbbell?set.weight*2:set.weight;
+  const pr=!isWarmup&&isPR(exName,weightForPR,set.reps);
+  const prStatus=!isWarmup&&set.weight&&set.reps?getPRStatus(exName,weightForPR,set.reps):null;
+  const prBadgeHtml=isWarmup?`<div class="wu-badge">WU</div>`:prStatus==='up'?`<div style="background:#39d98a;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">+ </div>`:prStatus==='equal'?`<div style="background:#007aff;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">= </div>`:prStatus==='down'?`<div style="background:#ff4d6d;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">− </div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
   row.className=`set-row${pr?' pr':''}${isWarmup?' warmup-row':''}`;row.id=`set-${ei}-${si}`;
 
   if(isDumbbell){
@@ -1675,14 +1689,14 @@ function buildSetRow(ei,si,set,isCardio){
         <span style="font-size:13px;color:var(--muted2);font-weight:500;min-width:30px;text-align:right">${displayWeight?displayWeight+'':'-'}</span>
       </div>
       <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
-      ${isWarmup?`<div class="wu-badge">WU</div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>'}`;
+      ${prBadgeHtml}`;
   }else{
     row.innerHTML=`
       <div class="set-num">${si+1}</div>
       <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
       <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)">
       <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
-      ${isWarmup?`<div class="wu-badge">WU</div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>'}`;
+      ${prBadgeHtml}`;
   }
   return row;
 }
@@ -1731,8 +1745,9 @@ function updateSet(ei,si,field,val){
     const dbDisplay=row.querySelector('span:nth-child(3)');
     if(dbDisplay)dbDisplay.textContent=set.weight?set.weight*2+''':'-';
   }
+  const prStatus=!isWarmup&&set.weight&&set.reps?getPRStatus(name,weightForPR,set.reps):null;
   const badge=row.querySelector('div:last-child');
-  if(badge)badge.outerHTML=isWarmup?`<div class="wu-badge">WU</div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
+  if(badge)badge.outerHTML=isWarmup?`<div class="wu-badge">WU</div>`:prStatus==='up'?`<div style="background:#39d98a;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">+ </div>`:prStatus==='equal'?`<div style="background:#007aff;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">= </div>`:prStatus==='down'?`<div style="background:#ff4d6d;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">− </div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
   const block=document.getElementById(`ex-block-${ei}`);
   if(block){
     const anyPR=S.currentSession.exercises[ei].sets.some(s=>!s.warmup&&isPR(name,isDumb?s.weight*2:s.weight,s.reps));
