@@ -208,28 +208,53 @@
     const pill = document.createElement("div");
     pill.id = "account-pill";
     pill.style.cssText = `
-      position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:12px;
-      z-index:500;display:flex;align-items:center;gap:8px;
+      display:flex;align-items:center;gap:8px;
       background:var(--surface,#181818);border:1px solid var(--border,#2e2e2e);
-      border-radius:20px;padding:5px 10px 5px 5px;cursor:pointer;
-      font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted2,#888);
-      box-shadow:0 2px 12px rgba(0,0,0,.3);
+      border-radius:12px;padding:10px 12px;cursor:pointer;
+      font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted2,#888);
+      width:100%;justify-content:space-between;
     `;
     const avatar = user.photoURL
-      ? `<img src="${user.photoURL}" style="width:22px;height:22px;border-radius:50%;object-fit:cover">`
-      : `<div style="width:22px;height:22px;border-radius:50%;background:var(--accent,#ff6b35);
+      ? `<img src="${user.photoURL}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+      : `<div style="width:28px;height:28px;border-radius:50%;background:var(--accent,#ff6b35);
                      display:flex;align-items:center;justify-content:center;
-                     font-size:11px;font-weight:700;color:#fff">
+                     font-size:12px;font-weight:700;color:#fff;flex-shrink:0">
            ${(user.displayName||user.email||"?")[0].toUpperCase()}
          </div>`;
     const name = user.displayName?.split(" ")[0] || user.email?.split("@")[0] || "Account";
-    pill.innerHTML = `${avatar}<span>${name}</span>`;
+    const email = user.email || "";
+    pill.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        ${avatar}
+        <div style="text-align:left">
+          <div style="font-size:13px;font-weight:600;color:var(--text,#f2f2f2)">${name}</div>
+          <div style="font-size:11px;color:var(--muted,#5a5a5a);margin-top:2px">${email}</div>
+        </div>
+      </div>
+      <span style="color:var(--accent,#ff6b35);font-size:18px">›</span>
+    `;
     pill.onclick = () => {
       if (confirm(`Sign out of IronLog?\n\nYour data will remain synced to ${user.email || "your account"}.`)) {
         auth.signOut();
       }
     };
-    document.body.appendChild(pill);
+    // Append to settings account section if it exists, otherwise to body
+    const accountSection = document.getElementById("account-section");
+    if (accountSection) {
+      accountSection.appendChild(pill);
+    } else {
+      // Fallback to fixed positioning if settings section doesn't exist yet
+      pill.style.cssText = `
+        position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:12px;
+        z-index:500;display:flex;align-items:center;gap:8px;
+        background:var(--surface,#181818);border:1px solid var(--border,#2e2e2e);
+        border-radius:20px;padding:5px 10px 5px 5px;cursor:pointer;
+        font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted2,#888);
+        box-shadow:0 2px 12px rgba(0,0,0,.3);width:auto;justify-content:flex-start;
+      `;
+      pill.innerHTML = `${avatar}<span>${name}</span>`;
+      document.body.appendChild(pill);
+    }
   }
 
   // ── Auth state listener ───────────────────────

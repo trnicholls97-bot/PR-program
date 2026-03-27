@@ -390,7 +390,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <div class="page" id="page-records">
    <div id="records-scroll-body"></div>
    <div class="records-search-bar">
-    <input class="lib-modal-search-input" id="records-search" type="search" placeholder="Search exercises..." oninput="filterRecordsSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+    <input class="lib-modal-search-input" id="records-search" type="search" placeholder="Search exercises..." oninput="filterRecordsSearch(this.value)" onfocus="this.setSelectionRange(this.value.length,this.value.length)" autocomplete="off" autocorrect="off" spellcheck="false">
    </div>
   </div>
 
@@ -423,7 +423,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
      <div class="profile-row">
       <div class="profile-field">
        <label>Age</label>
-       <input type="number" id="prof-age" placeholder="28" inputmode="numeric" oninput="saveProfile()">
+       <input type="number" id="prof-age" placeholder="28" inputmode="numeric" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
       </div>
       <div class="profile-field">
        <label>Sex</label>
@@ -437,13 +437,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
      <div class="profile-row">
       <div class="profile-field">
        <label>Weight (lbs)</label>
-       <input type="number" id="prof-weight" placeholder="185" inputmode="decimal" oninput="saveProfile()">
+       <input type="number" id="prof-weight" placeholder="185" inputmode="decimal" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
       </div>
       <div class="profile-field">
        <label>Height</label>
        <div style="display:flex;gap:6px">
-        <input type="number" id="prof-ft" placeholder="5'" inputmode="numeric" oninput="saveProfile()" style="width:48%">
-        <input type="number" id="prof-in" placeholder="10&quot;" inputmode="numeric" oninput="saveProfile()" style="width:48%">
+        <input type="number" id="prof-ft" placeholder="5'" inputmode="numeric" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)" style="width:48%">
+        <input type="number" id="prof-in" placeholder="10&quot;" inputmode="numeric" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)" style="width:48%">
        </div>
       </div>
      </div>
@@ -461,24 +461,24 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
      <div id="bf-pct-row" class="profile-row" style="display:none;grid-template-columns:1fr">
       <div class="profile-field">
        <label>Body Fat %</label>
-       <input type="number" id="prof-bf" placeholder="15" inputmode="decimal" oninput="saveProfile()">
+       <input type="number" id="prof-bf" placeholder="15" inputmode="decimal" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
       </div>
      </div>
      <div id="navy-rows" style="display:none">
       <div class="profile-row">
        <div class="profile-field">
         <label>Neck (in)</label>
-        <input type="number" id="prof-neck" placeholder="15.5" inputmode="decimal" oninput="saveProfile()">
+        <input type="number" id="prof-neck" placeholder="15.5" inputmode="decimal" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
        </div>
        <div class="profile-field">
         <label>Waist (in)</label>
-        <input type="number" id="prof-waist" placeholder="32" inputmode="decimal" oninput="saveProfile()">
+        <input type="number" id="prof-waist" placeholder="32" inputmode="decimal" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
        </div>
       </div>
       <div id="navy-hip-row" class="profile-row" style="display:none;grid-template-columns:1fr">
        <div class="profile-field">
         <label>Hip (in)</label>
-        <input type="number" id="prof-hip" placeholder="38" inputmode="decimal" oninput="saveProfile()">
+        <input type="number" id="prof-hip" placeholder="38" inputmode="decimal" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
        </div>
       </div>
      </div>
@@ -558,7 +558,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
     </div>
     <div class="custom-ex-form" id="custom-ex-form" style="display:none">
      <div class="form-row">
-      <input class="form-input" id="new-ex-name" placeholder="Exercise name" type="text">
+      <input class="form-input" id="new-ex-name" placeholder="Exercise name" type="text" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
      </div>
      <div class="form-row">
       <select class="form-select" id="new-ex-muscle">
@@ -603,6 +603,11 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
      <span style="color:var(--red)">&#8594;</span>
     </div>
    </div>
+
+   <!-- ACCOUNT -->
+   <div class="section-label">Account</div>
+   <div class="settings-group" id="account-section" style="padding:12px 16px">
+   </div>
    <div style="height:20px"></div>
   </div>
 
@@ -636,7 +641,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <div class="modal-head">
    <div class="modal-title" id="modal-title">Add Exercise</div>
    <div class="modal-sub" id="modal-sub"></div>
-   <input class="modal-search" id="modal-search" placeholder="Search exercises..." oninput="filterModal(this.value)">
+   <input class="modal-search" id="modal-search" placeholder="Search exercises..." oninput="filterModal(this.value)" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
   </div>
   <div class="modal-list" id="modal-list"></div>
  </div>
@@ -701,7 +706,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
    </div>
   </div>
   <div style="padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom))">
-   <input class="lib-modal-search-input" id="plans-modal-search" type="search" placeholder="Search..." oninput="filterPlansSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+   <input class="lib-modal-search-input" id="plans-modal-search" type="search" placeholder="Search..." oninput="filterPlansSearch(this.value)" onfocus="this.setSelectionRange(this.value.length,this.value.length)" autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
  </div>
 </div>
@@ -717,7 +722,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
  </div>
  <div class="lib-modal-content" id="lib-modal-content"></div>
  <div class="lib-modal-search-bar">
-  <input class="lib-modal-search-input" id="lib-modal-search" type="search" placeholder="Search exercises..." oninput="filterLibrarySearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+  <input class="lib-modal-search-input" id="lib-modal-search" type="search" placeholder="Search exercises..." oninput="filterLibrarySearch(this.value)" onfocus="this.setSelectionRange(this.value.length,this.value.length)" autocomplete="off" autocorrect="off" spellcheck="false">
  </div>
 </div>
 
@@ -1221,9 +1226,9 @@ function limitEmojiInput(input,max){
 function renderNewDayForm(){
   document.getElementById('plans-modal-content').innerHTML=`<div class="plans-new-day-form">
     <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Icon (up to 2 emojis)</div>
-    <input class="plans-emoji-input" id="new-day-icon" type="text" placeholder="😀" oninput="limitEmojiInput(this,2)" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:16px">
+    <input class="plans-emoji-input" id="new-day-icon" type="text" placeholder="😀" oninput="limitEmojiInput(this,2)" onfocus="this.setSelectionRange(this.value.length,this.value.length)" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:16px">
     <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Name</div>
-    <input class="lib-modal-search-input" id="new-day-name" placeholder="e.g. Push Day" type="text" autocomplete="off" style="margin-bottom:16px">
+    <input class="lib-modal-search-input" id="new-day-name" placeholder="e.g. Push Day" type="text" onfocus="this.setSelectionRange(this.value.length,this.value.length)" autocomplete="off" style="margin-bottom:16px">
     <button class="plans-add-btn" onclick="saveNewDay()">Create Day</button>
   </div>`;
 }
