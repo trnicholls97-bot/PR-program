@@ -1679,9 +1679,14 @@ function buildSetRow(ei,si,set,isCardio){
   const prBadgeHtml=isWarmup?`<div class="wu-badge">WU</div>`:prStatus==='up'?`<div style="background:#39d98a;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">+ </div>`:prStatus==='equal'?`<div style="background:#007aff;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">= </div>`:prStatus==='down'?`<div style="background:#ff4d6d;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">− </div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
   row.className=`set-row${pr?' pr':''}${isWarmup?' warmup-row':''}`;row.id=`set-${ei}-${si}`;
 
+  const restHtml=set.rest?`<div style="font-size:9px;color:var(--muted);margin-top:2px">${set.rest}m rest</div>`:'';
+
   if(isDumbbell){
     row.innerHTML=`
-      <div class="set-num">${si+1}</div>
+      <div style="text-align:center">
+        <div class="set-num">${si+1}</div>
+        ${restHtml}
+      </div>
       <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
       <div style="display:flex;align-items:center;gap:6px;flex:1">
         <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)" style="flex:1">
@@ -1692,7 +1697,10 @@ function buildSetRow(ei,si,set,isCardio){
       ${prBadgeHtml}`;
   }else{
     row.innerHTML=`
-      <div class="set-num">${si+1}</div>
+      <div style="text-align:center">
+        <div class="set-num">${si+1}</div>
+        ${restHtml}
+      </div>
       <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
       <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)">
       <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
@@ -1719,9 +1727,13 @@ function addSet(ei){
   const sets=ex.sets;
   const last=sets.length>0?sets[sets.length-1]:{weight:'',reps:'',time:'',speed:'',resistance:''};
   const isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
-  sets.push(isCardio
-    ?{time:last.time||'',speed:last.speed||'',resistance:last.resistance||'',ts:Date.now()}
-    :{weight:last.weight||'',reps:last.reps||'',ts:Date.now(),warmup:false});
+  const now=Date.now();
+  const restMs=sets.length>0&&last.ts?now-last.ts:0;
+  const restMin=Math.round(restMs/60000);
+  const newSet=isCardio
+    ?{time:last.time||'',speed:last.speed||'',resistance:last.resistance||'',ts:now,rest:restMin}
+    :{weight:last.weight||'',reps:last.reps||'',ts:now,warmup:false,rest:restMin};
+  sets.push(newSet);
   const sc=document.getElementById(`sets-${ei}`);
   const si=sets.length-1;
   const row=buildSetRow(ei,si,sets[si],isCardio);
