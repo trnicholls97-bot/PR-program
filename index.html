@@ -2158,12 +2158,32 @@ function renderHistoryList(filterDate){
   const detailed=!!filterDate; // show full set detail when a day is selected
   if(filterDate){filtered=S.workouts.filter(w=>isoDate(w.startTime)===filterDate);}
   else{filtered=S.workouts.filter(w=>{const d=new Date(w.startTime);return d.getFullYear()===calYear&&d.getMonth()===calMonth;});}
+
+  let html='';
+
+  // Add active session at top if exists
+  if(S.currentSession){
+    const def=allDayDefs().find(d=>d.id===S.currentSession.dayId);
+    const icon=def?def.icon:'⚡';
+    html+=`<div class="history-entry" style="border-color:var(--accent);background:var(--accent-dim,.1)">
+      <div class="he-header">
+        <div><div class="he-day" style="color:var(--accent)">${icon} ${def?def.label:'Workout'} (In Progress)</div></div>
+        <div class="he-duration">${durStr(Date.now()-S.currentSession.startTime)}</div>
+      </div>
+    </div>`;
+  }
+
   if(!filtered.length){
-    body.innerHTML=`<div class="empty"><div class="empty-icon">&#128203;</div><p>${filterDate?'No workout on this day.':'No workouts this month.'}</p></div>`;
+    if(!html){body.innerHTML=`<div class="empty"><div class="empty-icon">&#128203;</div><p>${filterDate?'No workout on this day.':'No workouts this month.'}</p></div>`;}
+    else{body.innerHTML=html;}
     return;
   }
-  body.innerHTML=filtered.map((w)=>{
+
+  if(!S.workoutCollapsedStates)S.workoutCollapsedStates={};
+  html+=filtered.map((w)=>{
     const realIdx=S.workouts.indexOf(w);
+    const stateKey=''+w.startTime;
+    const isCollapsed=!!S.workoutCollapsedStates[stateKey];
     const def=allDayDefs().find(d=>d.id===w.dayId);const icon=def?def.icon:'⚡';
     const hasPR=w.exercises.some(ex=>ex.sets.some(s=>{const pr=S.prs[ex.name];return pr&&pr.date>=w.startTime&&pr.date<=w.endTime;}));
 
@@ -2195,20 +2215,29 @@ function renderHistoryList(filterDate){
         }).join('')
       : w.exercises.map(ex=>{const valid=ex.sets.filter(s=>s.weight||s.reps).length;return`<div class="he-exercise-row"><div>${ex.name}</div><div class="he-ex-sets">${valid} set${valid!==1?'s':''}</div></div>`;}).join('');
 
-    return`<div class="history-entry${detailed?' history-entry-detailed':''}">
-      <div class="he-header">
+    const headerHtml=`<div class="history-entry${detailed?' history-entry-detailed':''}">
+      <div class="he-header" onclick="toggleCollapseWorkout('${stateKey}')" style="cursor:pointer">
         <div><div class="he-day">${icon} ${w.dayLabel}</div><div class="he-date">${shortDate(w.startTime)} &middot; ${timeStr(w.startTime)}</div></div>
         <div class="he-badges">
           ${hasPR?`<span class="pr-badge">PR</span>`:''}
           <div class="he-duration">${durStr(w.duration)}</div>
-          <button class="he-del-btn" onclick="deleteWorkout(${realIdx})">&#10005;</button>
+          <span style="font-size:18px;margin-right:8px">${isCollapsed?'▶':'▼'}</span>
+          <button class="he-del-btn" onclick="event.stopPropagation();deleteWorkout(${realIdx})">&#10005;</button>
         </div>
       </div>
-      <div class="he-body">${exDetail}
+      ${!isCollapsed?`<div class="he-body">${exDetail}
         ${w.calories?`<div class="he-cal-row"><div class="he-cal-label">&#128293; Est. burned</div><div class="he-cal-val">${w.calories.toLocaleString()} kcal</div></div>`:''}
-      </div>
-    </div>`;
+      </div>`:''}</div>`;
+    return headerHtml;
   }).join('');
+
+  body.innerHTML=html;
+}
+
+function toggleCollapseWorkout(stateKey){
+  if(!S.workoutCollapsedStates)S.workoutCollapsedStates={};
+  S.workoutCollapsedStates[stateKey]=!S.workoutCollapsedStates[stateKey];
+  saveState();renderHistory();
 }
 
 function deleteWorkout(idx){
