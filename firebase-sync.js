@@ -16,6 +16,71 @@
     measurementId: "G-X5XWMP8T41",
   };
 
+  // ── WebView/In-App Browser Detection ──────────
+  function isWebViewOrInAppBrowser() {
+    const ua = navigator.userAgent;
+    // Check for common WebView/in-app browser indicators
+    const webViewPatterns = [
+      /wv/i,                           // Android WebView
+      /Version\/[\d.]+.*Chrome/i,      // Android WebView
+      /FBAN\/[A-Z]+/i,                 // Facebook In-App Browser
+      /FB[A-Z]+\/[A-Z0-9]+/i,          // Facebook SDK
+      /Instagram/i,                     // Instagram In-App Browser
+      /LinkedIn/i,                      // LinkedIn In-App Browser
+      /twitter/i,                       // Twitter/X In-App Browser
+      /Reddit/i,                        // Reddit In-App Browser
+      /Line\//i,                        // LINE In-App Browser
+      /WeChat/i,                        // WeChat In-App Browser
+      /UCBrowser/i,                     // UC Browser (sometimes has oauth issues)
+    ];
+    return webViewPatterns.some(pattern => pattern.test(ua));
+  }
+
+  // ── Show WebView OAuth Warning ─────────────────
+  function showWebViewWarning() {
+    const overlay = document.createElement("div");
+    overlay.id = "webview-warning";
+    overlay.style.cssText = `
+      position:fixed;inset:0;z-index:10000;
+      background:rgba(0,0,0,.8);
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      padding:40px 24px;font-family:'Barlow',sans-serif;
+    `;
+    const currentUrl = encodeURIComponent(window.location.href);
+    overlay.innerHTML = `
+      <div style="text-align:center;max-width:300px;color:#f2f2f2">
+        <div style="font-size:48px;margin-bottom:16px">🔐</div>
+        <div style="font-size:22px;font-weight:700;margin-bottom:12px;font-family:'Barlow Condensed',sans-serif">Browser Required</div>
+        <div style="font-size:13px;color:#aaa;line-height:1.6;margin-bottom:24px">
+          Sign-in doesn't work in this browser. Open IronLog in your device's default browser to sign in with Google.
+        </div>
+        <button onclick="
+          const ua = navigator.userAgent;
+          let deepLink = '';
+          if (/iPhone|iPad/.test(ua)) {
+            deepLink = 'https://itunes.apple.com/app/safari';
+          } else {
+            deepLink = '${currentUrl}';
+          }
+          window.location.href = deepLink;
+        " style="
+          width:100%;padding:14px;border-radius:12px;
+          background:#ff6b35;color:#fff;border:none;
+          font-family:'Barlow',sans-serif;font-size:16px;font-weight:700;
+          cursor:pointer;margin-bottom:12px;
+        ">Open in Browser</button>
+        <button onclick="document.getElementById('webview-warning').remove()" style="
+          width:100%;padding:12px;border-radius:12px;
+          background:transparent;color:#ff6b35;border:1px solid #ff6b35;
+          font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;
+          cursor:pointer;
+        ">Continue Anyway</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+
   // ── Init ──────────────────────────────────────
   if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
   const auth = firebase.auth();
@@ -171,6 +236,12 @@
     document.body.appendChild(overlay);
 
     document.getElementById("google-signin-btn").onclick = async () => {
+      // Check if running in WebView/in-app browser
+      if (isWebViewOrInAppBrowser()) {
+        showWebViewWarning();
+        return;
+      }
+
       const btn = document.getElementById("google-signin-btn");
       btn.style.opacity = ".5";
       btn.textContent = "Signing in…";
@@ -208,28 +279,53 @@
     const pill = document.createElement("div");
     pill.id = "account-pill";
     pill.style.cssText = `
-      position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:12px;
-      z-index:500;display:flex;align-items:center;gap:8px;
+      display:flex;align-items:center;gap:8px;
       background:var(--surface,#181818);border:1px solid var(--border,#2e2e2e);
-      border-radius:20px;padding:5px 10px 5px 5px;cursor:pointer;
-      font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted2,#888);
-      box-shadow:0 2px 12px rgba(0,0,0,.3);
+      border-radius:12px;padding:10px 12px;cursor:pointer;
+      font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted2,#888);
+      width:100%;justify-content:space-between;
     `;
     const avatar = user.photoURL
-      ? `<img src="${user.photoURL}" style="width:22px;height:22px;border-radius:50%;object-fit:cover">`
-      : `<div style="width:22px;height:22px;border-radius:50%;background:var(--accent,#ff6b35);
+      ? `<img src="${user.photoURL}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+      : `<div style="width:28px;height:28px;border-radius:50%;background:var(--accent,#ff6b35);
                      display:flex;align-items:center;justify-content:center;
-                     font-size:11px;font-weight:700;color:#fff">
+                     font-size:12px;font-weight:700;color:#fff;flex-shrink:0">
            ${(user.displayName||user.email||"?")[0].toUpperCase()}
          </div>`;
     const name = user.displayName?.split(" ")[0] || user.email?.split("@")[0] || "Account";
-    pill.innerHTML = `${avatar}<span>${name}</span>`;
+    const email = user.email || "";
+    pill.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        ${avatar}
+        <div style="text-align:left">
+          <div style="font-size:13px;font-weight:600;color:var(--text,#f2f2f2)">${name}</div>
+          <div style="font-size:11px;color:var(--muted,#5a5a5a);margin-top:2px">${email}</div>
+        </div>
+      </div>
+      <span style="color:var(--accent,#ff6b35);font-size:18px">›</span>
+    `;
     pill.onclick = () => {
       if (confirm(`Sign out of IronLog?\n\nYour data will remain synced to ${user.email || "your account"}.`)) {
         auth.signOut();
       }
     };
-    document.body.appendChild(pill);
+    // Append to settings account section if it exists, otherwise to body
+    const accountSection = document.getElementById("account-section");
+    if (accountSection) {
+      accountSection.appendChild(pill);
+    } else {
+      // Fallback to fixed positioning if settings section doesn't exist yet
+      pill.style.cssText = `
+        position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:12px;
+        z-index:500;display:flex;align-items:center;gap:8px;
+        background:var(--surface,#181818);border:1px solid var(--border,#2e2e2e);
+        border-radius:20px;padding:5px 10px 5px 5px;cursor:pointer;
+        font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted2,#888);
+        box-shadow:0 2px 12px rgba(0,0,0,.3);width:auto;justify-content:flex-start;
+      `;
+      pill.innerHTML = `${avatar}<span>${name}</span>`;
+      document.body.appendChild(pill);
+    }
   }
 
   // ── Auth state listener ───────────────────────

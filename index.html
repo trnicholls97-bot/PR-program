@@ -390,7 +390,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <div class="page" id="page-records">
    <div id="records-scroll-body"></div>
    <div class="records-search-bar">
-    <input class="lib-modal-search-input" id="records-search" type="search" placeholder="Search exercises..." oninput="filterRecordsSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+    <input class="lib-modal-search-input" id="records-search" type="search" placeholder="Search exercises..." oninput="filterRecordsSearch(this.value)" onfocus="this.setSelectionRange(this.value.length,this.value.length)" autocomplete="off" autocorrect="off" spellcheck="false">
    </div>
   </div>
 
@@ -423,7 +423,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
      <div class="profile-row">
       <div class="profile-field">
        <label>Age</label>
-       <input type="number" id="prof-age" placeholder="28" inputmode="numeric" oninput="saveProfile()">
+       <input type="number" id="prof-age" placeholder="28" inputmode="numeric" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
       </div>
       <div class="profile-field">
        <label>Sex</label>
@@ -437,13 +437,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
      <div class="profile-row">
       <div class="profile-field">
        <label>Weight (lbs)</label>
-       <input type="number" id="prof-weight" placeholder="185" inputmode="decimal" oninput="saveProfile()">
+       <input type="number" id="prof-weight" placeholder="185" inputmode="decimal" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
       </div>
       <div class="profile-field">
        <label>Height</label>
        <div style="display:flex;gap:6px">
-        <input type="number" id="prof-ft" placeholder="5'" inputmode="numeric" oninput="saveProfile()" style="width:48%">
-        <input type="number" id="prof-in" placeholder="10&quot;" inputmode="numeric" oninput="saveProfile()" style="width:48%">
+        <input type="number" id="prof-ft" placeholder="5'" inputmode="numeric" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)" style="width:48%">
+        <input type="number" id="prof-in" placeholder="10&quot;" inputmode="numeric" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)" style="width:48%">
        </div>
       </div>
      </div>
@@ -461,24 +461,24 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
      <div id="bf-pct-row" class="profile-row" style="display:none;grid-template-columns:1fr">
       <div class="profile-field">
        <label>Body Fat %</label>
-       <input type="number" id="prof-bf" placeholder="15" inputmode="decimal" oninput="saveProfile()">
+       <input type="number" id="prof-bf" placeholder="15" inputmode="decimal" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
       </div>
      </div>
      <div id="navy-rows" style="display:none">
       <div class="profile-row">
        <div class="profile-field">
         <label>Neck (in)</label>
-        <input type="number" id="prof-neck" placeholder="15.5" inputmode="decimal" oninput="saveProfile()">
+        <input type="number" id="prof-neck" placeholder="15.5" inputmode="decimal" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
        </div>
        <div class="profile-field">
         <label>Waist (in)</label>
-        <input type="number" id="prof-waist" placeholder="32" inputmode="decimal" oninput="saveProfile()">
+        <input type="number" id="prof-waist" placeholder="32" inputmode="decimal" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
        </div>
       </div>
       <div id="navy-hip-row" class="profile-row" style="display:none;grid-template-columns:1fr">
        <div class="profile-field">
         <label>Hip (in)</label>
-        <input type="number" id="prof-hip" placeholder="38" inputmode="decimal" oninput="saveProfile()">
+        <input type="number" id="prof-hip" placeholder="38" inputmode="decimal" oninput="saveProfile()" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
        </div>
       </div>
      </div>
@@ -569,7 +569,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
     </div>
     <div class="custom-ex-form" id="custom-ex-form" style="display:none">
      <div class="form-row">
-      <input class="form-input" id="new-ex-name" placeholder="Exercise name" type="text">
+      <input class="form-input" id="new-ex-name" placeholder="Exercise name" type="text" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
      </div>
      <div class="form-row">
       <select class="form-select" id="new-ex-muscle">
@@ -614,6 +614,11 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
      <span style="color:var(--red)">&#8594;</span>
     </div>
    </div>
+
+   <!-- ACCOUNT -->
+   <div class="section-label">Account</div>
+   <div class="settings-group" id="account-section" style="padding:12px 16px">
+   </div>
    <div style="height:20px"></div>
   </div>
 
@@ -647,7 +652,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <div class="modal-head">
    <div class="modal-title" id="modal-title">Add Exercise</div>
    <div class="modal-sub" id="modal-sub"></div>
-   <input class="modal-search" id="modal-search" placeholder="Search exercises..." oninput="filterModal(this.value)">
+   <input class="modal-search" id="modal-search" placeholder="Search exercises..." oninput="filterModal(this.value)" onfocus="this.setSelectionRange(this.value.length,this.value.length)">
   </div>
   <div class="modal-list" id="modal-list"></div>
  </div>
@@ -712,7 +717,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
    </div>
   </div>
   <div style="padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom))">
-   <input class="lib-modal-search-input" id="plans-modal-search" type="search" placeholder="Search..." oninput="filterPlansSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+   <input class="lib-modal-search-input" id="plans-modal-search" type="search" placeholder="Search..." oninput="filterPlansSearch(this.value)" onfocus="this.setSelectionRange(this.value.length,this.value.length)" autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
  </div>
 </div>
@@ -728,7 +733,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
  </div>
  <div class="lib-modal-content" id="lib-modal-content"></div>
  <div class="lib-modal-search-bar">
-  <input class="lib-modal-search-input" id="lib-modal-search" type="search" placeholder="Search exercises..." oninput="filterLibrarySearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+  <input class="lib-modal-search-input" id="lib-modal-search" type="search" placeholder="Search exercises..." oninput="filterLibrarySearch(this.value)" onfocus="this.setSelectionRange(this.value.length,this.value.length)" autocomplete="off" autocorrect="off" spellcheck="false">
  </div>
 </div>
 
@@ -819,7 +824,18 @@ function isoDate(ts){return new Date(ts).toISOString().slice(0,10);}
 function durStr(ms){const m=Math.round(ms/60000);return m<60?`${m}m`:`${Math.floor(m/60)}h ${m%60}m`;}
 function e1rm(w,r){return(w&&r)?Math.round(w*(1+r/30)):0;}
 function isPR(name,w,r){if(!w||!r)return false;const v=e1rm(w,r),p=S.prs[name];return!p||v>p.e1rm;}
-function recordPR(name,w,r){S.prs[name]={weight:w,reps:r,e1rm:e1rm(w,r),date:Date.now()};}
+function recordPR(name,w,r){const isDumb=isDumbbellExercise(name);const displayW=isDumb?w*2:w;S.prs[name]={weight:displayW,reps:r,e1rm:e1rm(displayW,r),date:Date.now()};}
+function getPRStatus(name,w,r){
+  if(!w||!r)return null;
+  const prData=S.prs[name];
+  if(!prData)return'new';
+  if(prData.reps===r){
+    if(w>prData.weight)return'up';
+    if(w===prData.weight)return'equal';
+    if(w<prData.weight)return'down';
+  }
+  return null;
+}
 
 function allDayDefs(){
   const ov=S.dayIconOverrides||{};
@@ -1276,9 +1292,9 @@ function limitEmojiInput(input,max){
 function renderNewDayForm(){
   document.getElementById('plans-modal-content').innerHTML=`<div class="plans-new-day-form">
     <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Icon (up to 2 emojis)</div>
-    <input class="plans-emoji-input" id="new-day-icon" type="text" placeholder="😀" oninput="limitEmojiInput(this,2)" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:16px">
+    <input class="plans-emoji-input" id="new-day-icon" type="text" placeholder="😀" oninput="limitEmojiInput(this,2)" onfocus="this.setSelectionRange(this.value.length,this.value.length)" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:16px">
     <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Name</div>
-    <input class="lib-modal-search-input" id="new-day-name" placeholder="e.g. Push Day" type="text" autocomplete="off" style="margin-bottom:16px">
+    <input class="lib-modal-search-input" id="new-day-name" placeholder="e.g. Push Day" type="text" onfocus="this.setSelectionRange(this.value.length,this.value.length)" autocomplete="off" style="margin-bottom:16px">
     <button class="plans-add-btn" onclick="saveNewDay()">Create Day</button>
   </div>`;
 }
@@ -1688,12 +1704,18 @@ function swapExercise(ei,newName){
   saveState();renderSessionExercises();
 }
 
+function isDumbbellExercise(name){
+  return/\b(dumbbell|db)\b/i.test(name);
+}
+
 function buildSetRow(ei,si,set,isCardio){
   const row=document.createElement('div');
   if(isCardio===undefined){
     const ex=S.currentSession.exercises[ei];
     isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
   }
+  const exName=S.currentSession.exercises[ei].name;
+  const isDumbbell=!isCardio&&isDumbbellExercise(exName);
   if(isCardio){
     row.className='set-row cardio-row';row.id=`set-${ei}-${si}`;
     row.innerHTML=`
@@ -1705,14 +1727,40 @@ function buildSetRow(ei,si,set,isCardio){
     return row;
   }
   const isWarmup=set.warmup||false;
-  const pr=!isWarmup&&isPR(S.currentSession.exercises[ei].name,set.weight,set.reps);
+  const displayWeight=isDumbbell?set.weight*2||'':set.weight||'';
+  const weightForPR=isDumbbell?set.weight*2:set.weight;
+  const pr=!isWarmup&&isPR(exName,weightForPR,set.reps);
+  const prStatus=!isWarmup&&set.weight&&set.reps?getPRStatus(exName,weightForPR,set.reps):null;
+  const prBadgeHtml=isWarmup?`<div class="wu-badge">WU</div>`:prStatus==='up'?`<div style="background:#39d98a;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">+ </div>`:prStatus==='equal'?`<div style="background:#007aff;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">= </div>`:prStatus==='down'?`<div style="background:#ff4d6d;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">− </div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
   row.className=`set-row${pr?' pr':''}${isWarmup?' warmup-row':''}`;row.id=`set-${ei}-${si}`;
-  row.innerHTML=`
-    <div class="set-num">${si+1}</div>
-    <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
-    <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)">
-    <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
-    ${isWarmup?`<div class="wu-badge">WU</div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>'}`;
+
+  const restHtml=set.rest?`<div style="font-size:9px;color:var(--muted);margin-top:2px">${set.rest}m rest</div>`:'';
+
+  if(isDumbbell){
+    row.innerHTML=`
+      <div style="text-align:center">
+        <div class="set-num">${si+1}</div>
+        ${restHtml}
+      </div>
+      <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
+      <div style="display:flex;align-items:center;gap:6px;flex:1">
+        <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)" style="flex:1">
+        <span style="font-size:12px;color:var(--muted);white-space:nowrap">× 2</span>
+        <span style="font-size:13px;color:var(--muted2);font-weight:500;min-width:30px;text-align:right">${displayWeight?displayWeight+'':'-'}</span>
+      </div>
+      <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
+      ${prBadgeHtml}`;
+  }else{
+    row.innerHTML=`
+      <div style="text-align:center">
+        <div class="set-num">${si+1}</div>
+        ${restHtml}
+      </div>
+      <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
+      <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)">
+      <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
+      ${prBadgeHtml}`;
+  }
   return row;
 }
 
@@ -1734,9 +1782,22 @@ function addSet(ei){
   const sets=ex.sets;
   const last=sets.length>0?sets[sets.length-1]:{weight:'',reps:'',time:'',speed:'',resistance:''};
   const isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
-  sets.push(isCardio
-    ?{time:last.time||'',speed:last.speed||'',resistance:last.resistance||'',ts:Date.now()}
-    :{weight:last.weight||'',reps:last.reps||'',ts:Date.now(),warmup:false});
+  const now=Date.now();
+  const restMs=sets.length>0&&last.ts?now-last.ts:0;
+  const restMin=Math.round(restMs/60000);
+
+  let warmupDefault=false;
+  const isFirstEx=ei===0;
+  if(isFirstEx&&!isCardio){
+    if(!S.currentSession.warmupCheckDone){
+      warmupDefault=sets.length<4;
+    }
+  }
+
+  const newSet=isCardio
+    ?{time:last.time||'',speed:last.speed||'',resistance:last.resistance||'',ts:now,rest:restMin}
+    :{weight:last.weight||'',reps:last.reps||'',ts:now,warmup:warmupDefault,rest:restMin};
+  sets.push(newSet);
   const sc=document.getElementById(`sets-${ei}`);
   const si=sets.length-1;
   const row=buildSetRow(ei,si,sets[si],isCardio);
@@ -1744,26 +1805,91 @@ function addSet(ei){
   scrollToCenter(row);
   resetRestTimer();
   saveState();
+
+  if(isFirstEx&&!isCardio&&!S.currentSession.warmupCheckDone&&(sets.length===4||sets.length===5)){
+    showWarmupCheckDialog(ei);
+  }
 }
 
 function updateSet(ei,si,field,val){
   const set=S.currentSession.exercises[ei].sets[si];
   set[field]=val?parseFloat(val):'';
   const name=S.currentSession.exercises[ei].name;
+  const isDumb=isDumbbellExercise(name);
   const row=document.getElementById(`set-${ei}-${si}`);if(!row)return;
   const isWarmup=set.warmup;
-  const pr=!isWarmup&&isPR(name,set.weight,set.reps);
+  const weightForPR=isDumb?set.weight*2:set.weight;
+  const pr=!isWarmup&&isPR(name,weightForPR,set.reps);
   row.classList.toggle('pr',pr&&!isWarmup);
+  if(isDumb&&field==='weight'){
+    const dbDisplay=row.querySelector('span:nth-child(3)');
+    if(dbDisplay)dbDisplay.textContent=set.weight?set.weight*2+''':'-';
+  }
+  const prStatus=!isWarmup&&set.weight&&set.reps?getPRStatus(name,weightForPR,set.reps):null;
   const badge=row.querySelector('div:last-child');
-  if(badge)badge.outerHTML=isWarmup?`<div class="wu-badge">WU</div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
+  if(badge)badge.outerHTML=isWarmup?`<div class="wu-badge">WU</div>`:prStatus==='up'?`<div style="background:#39d98a;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">+ </div>`:prStatus==='equal'?`<div style="background:#007aff;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">= </div>`:prStatus==='down'?`<div style="background:#ff4d6d;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">− </div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
   const block=document.getElementById(`ex-block-${ei}`);
   if(block){
-    const anyPR=S.currentSession.exercises[ei].sets.some(s=>!s.warmup&&isPR(name,s.weight,s.reps));
+    const anyPR=S.currentSession.exercises[ei].sets.some(s=>!s.warmup&&isPR(name,isDumb?s.weight*2:s.weight,s.reps));
     const existing=block.querySelector('.ex-actions .pr-badge');
     if(anyPR&&!existing)block.querySelector('.icon-btn.del').insertAdjacentHTML('beforebegin','<span class="pr-badge">PR</span>');
     else if(!anyPR&&existing)existing.remove();
   }
   saveState();
+}
+
+function showWarmupCheckDialog(ei){
+  const overlay=document.createElement('div');
+  overlay.style.cssText=`
+    position:fixed;inset:0;z-index:5000;
+    background:rgba(0,0,0,.6);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;font-family:'Barlow',sans-serif;
+  `;
+  const dialog=document.createElement('div');
+  dialog.style.cssText=`
+    background:var(--surface,#181818);
+    border:1px solid var(--border,#2e2e2e);
+    border-radius:16px;padding:28px 24px;
+    max-width:340px;width:100%;
+    text-align:center;
+  `;
+  dialog.innerHTML=`
+    <div style="font-size:20px;font-weight:700;color:var(--text,#f2f2f2);margin-bottom:12px">
+      Have you completed your warmup?
+    </div>
+    <div style="font-size:14px;color:var(--muted,#5a5a5a);margin-bottom:24px;line-height:1.5">
+      We'll mark sets automatically to help track your workout.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button id="warmup-yes-btn" style="
+        background:var(--accent,#ff6b35);color:#fff;
+        border:none;border-radius:12px;padding:14px;
+        font-family:'Barlow',sans-serif;font-size:15px;font-weight:700;
+        cursor:pointer;transition:opacity .15s
+      ">Yes, start working sets</button>
+      <button id="warmup-continue-btn" style="
+        background:transparent;color:var(--accent,#ff6b35);
+        border:1px solid var(--accent,#ff6b35);border-radius:12px;padding:13px;
+        font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;
+        cursor:pointer;transition:opacity .15s
+      ">Continue warmup</button>
+    </div>
+  `;
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+
+  document.getElementById('warmup-yes-btn').onclick=()=>{
+    S.currentSession.warmupCheckDone=true;
+    S.currentSession.exercises[ei].sets.forEach(s=>{s.warmup=false;});
+    renderSessionExercises();
+    saveState();
+    overlay.remove();
+  };
+
+  document.getElementById('warmup-continue-btn').onclick=()=>{
+    overlay.remove();
+  };
 }
 
 function removeExercise(ei){S.currentSession.exercises.splice(ei,1);renderSessionExercises();saveState();}
@@ -1801,10 +1927,14 @@ function finishWorkout(){
       });
     }else{
       ex.sets.forEach(s=>{
-        if(!s.warmup&&s.weight&&s.reps&&isPR(ex.name,s.weight,s.reps)){
-          const old=S.prs[ex.name];
-          newPRs.push({name:ex.name,oldWeight:old?old.weight:null,oldReps:old?old.reps:null,newWeight:s.weight,newReps:s.reps});
-          recordPR(ex.name,s.weight,s.reps);
+        if(!s.warmup&&s.weight&&s.reps){
+          const isDumb=isDumbbellExercise(ex.name);
+          const weightForPR=isDumb?s.weight*2:s.weight;
+          if(isPR(ex.name,weightForPR,s.reps)){
+            const old=S.prs[ex.name];
+            newPRs.push({name:ex.name,oldWeight:old?old.weight:null,oldReps:old?old.reps:null,newWeight:weightForPR,newReps:s.reps});
+            recordPR(ex.name,s.weight,s.reps);
+          }
         }
       });
     }
@@ -2083,12 +2213,30 @@ function renderHistoryList(filterDate){
   const detailed=!!filterDate; // show full set detail when a day is selected
   if(filterDate){filtered=S.workouts.filter(w=>isoDate(w.startTime)===filterDate);}
   else{filtered=S.workouts.filter(w=>{const d=new Date(w.startTime);return d.getFullYear()===calYear&&d.getMonth()===calMonth;});}
+
+  let html='';
+  // Show active session at top if exists and matches filter
+  if(S.currentSession&&(!filterDate||isoDate(S.currentSession.startTime)===filterDate)){
+    const def=allDayDefs().find(d=>d.id===S.currentSession.dayId);
+    const icon=def?def.icon:'⚡';
+    html+=`<div class="history-entry" style="border-color:var(--accent);background:var(--accent-dim,.1)">
+      <div class="he-header">
+        <div><div class="he-day" style="color:var(--accent)">${icon} ${def?def.label:'Workout'} (In Progress)</div><div class="he-date">${shortDate(S.currentSession.startTime)} • Running</div></div>
+        <div class="he-badges"><div class="he-duration">${durStr(Date.now()-S.currentSession.startTime)}</div></div>
+      </div>
+    </div>`;
+  }
+
   if(!filtered.length){
-    body.innerHTML=`<div class="empty"><div class="empty-icon">&#128203;</div><p>${filterDate?'No workout on this day.':'No workouts this month.'}</p></div>`;
+    if(!html){body.innerHTML=`<div class="empty"><div class="empty-icon">&#128203;</div><p>${filterDate?'No workout on this day.':'No workouts this month.'}</p></div>`;}
+    else{body.innerHTML=html;}
     return;
   }
-  body.innerHTML=filtered.map((w)=>{
+  if(!S.workoutCollapsedStates)S.workoutCollapsedStates={};
+  html+=filtered.map((w)=>{
     const realIdx=S.workouts.indexOf(w);
+    const stateKey=`${w.startTime}`;
+    const isCollapsed=S.workoutCollapsedStates[stateKey]||false;
     const def=allDayDefs().find(d=>d.id===w.dayId);const icon=def?def.icon:'⚡';
     const hasPR=w.exercises.some(ex=>ex.sets.some(s=>{const pr=S.prs[ex.name];return pr&&pr.date>=w.startTime&&pr.date<=w.endTime;}));
 
@@ -2121,19 +2269,27 @@ function renderHistoryList(filterDate){
       : w.exercises.map(ex=>{const valid=ex.sets.filter(s=>s.weight||s.reps).length;return`<div class="he-exercise-row"><div>${ex.name}</div><div class="he-ex-sets">${valid} set${valid!==1?'s':''}</div></div>`;}).join('');
 
     return`<div class="history-entry${detailed?' history-entry-detailed':''}">
-      <div class="he-header">
+      <div class="he-header" style="cursor:pointer" onclick="toggleCollapseWorkout('${stateKey}')">
         <div><div class="he-day">${icon} ${w.dayLabel}</div><div class="he-date">${shortDate(w.startTime)} &middot; ${timeStr(w.startTime)}</div></div>
         <div class="he-badges">
           ${hasPR?`<span class="pr-badge">PR</span>`:''}
           <div class="he-duration">${durStr(w.duration)}</div>
-          <button class="he-del-btn" onclick="deleteWorkout(${realIdx})">&#10005;</button>
+          <span style="font-size:18px;color:var(--muted2);margin:0 6px">${isCollapsed?'▶':'▼'}</span>
+          <button class="he-del-btn" onclick="event.stopPropagation();deleteWorkout(${realIdx})">&#10005;</button>
         </div>
       </div>
-      <div class="he-body">${exDetail}
+      ${!isCollapsed?`<div class="he-body">${exDetail}
         ${w.calories?`<div class="he-cal-row"><div class="he-cal-label">&#128293; Est. burned</div><div class="he-cal-val">${w.calories.toLocaleString()} kcal</div></div>`:''}
-      </div>
+      </div>`:''}
     </div>`;
   }).join('');
+  body.innerHTML=html;
+}
+
+function toggleCollapseWorkout(stateKey){
+  if(!S.workoutCollapsedStates)S.workoutCollapsedStates={};
+  S.workoutCollapsedStates[stateKey]=!S.workoutCollapsedStates[stateKey];
+  saveState();renderHistory();
 }
 
 function deleteWorkout(idx){
