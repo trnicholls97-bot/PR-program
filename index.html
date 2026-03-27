@@ -1730,9 +1730,18 @@ function addSet(ei){
   const now=Date.now();
   const restMs=sets.length>0&&last.ts?now-last.ts:0;
   const restMin=Math.round(restMs/60000);
+
+  let warmupDefault=false;
+  const isFirstEx=ei===0;
+  if(isFirstEx&&!isCardio){
+    if(!S.currentSession.warmupCheckDone){
+      warmupDefault=sets.length<4;
+    }
+  }
+
   const newSet=isCardio
     ?{time:last.time||'',speed:last.speed||'',resistance:last.resistance||'',ts:now,rest:restMin}
-    :{weight:last.weight||'',reps:last.reps||'',ts:now,warmup:false,rest:restMin};
+    :{weight:last.weight||'',reps:last.reps||'',ts:now,warmup:warmupDefault,rest:restMin};
   sets.push(newSet);
   const sc=document.getElementById(`sets-${ei}`);
   const si=sets.length-1;
@@ -1741,6 +1750,10 @@ function addSet(ei){
   scrollToCenter(row);
   resetRestTimer();
   saveState();
+
+  if(isFirstEx&&!isCardio&&!S.currentSession.warmupCheckDone&&(sets.length===4||sets.length===5)){
+    showWarmupCheckDialog(ei);
+  }
 }
 
 function updateSet(ei,si,field,val){
@@ -1768,6 +1781,60 @@ function updateSet(ei,si,field,val){
     else if(!anyPR&&existing)existing.remove();
   }
   saveState();
+}
+
+function showWarmupCheckDialog(ei){
+  const overlay=document.createElement('div');
+  overlay.style.cssText=`
+    position:fixed;inset:0;z-index:5000;
+    background:rgba(0,0,0,.6);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;font-family:'Barlow',sans-serif;
+  `;
+  const dialog=document.createElement('div');
+  dialog.style.cssText=`
+    background:var(--surface,#181818);
+    border:1px solid var(--border,#2e2e2e);
+    border-radius:16px;padding:28px 24px;
+    max-width:340px;width:100%;
+    text-align:center;
+  `;
+  dialog.innerHTML=`
+    <div style="font-size:20px;font-weight:700;color:var(--text,#f2f2f2);margin-bottom:12px">
+      Have you completed your warmup?
+    </div>
+    <div style="font-size:14px;color:var(--muted,#5a5a5a);margin-bottom:24px;line-height:1.5">
+      We'll mark sets automatically to help track your workout.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button id="warmup-yes-btn" style="
+        background:var(--accent,#ff6b35);color:#fff;
+        border:none;border-radius:12px;padding:14px;
+        font-family:'Barlow',sans-serif;font-size:15px;font-weight:700;
+        cursor:pointer;transition:opacity .15s
+      ">Yes, start working sets</button>
+      <button id="warmup-continue-btn" style="
+        background:transparent;color:var(--accent,#ff6b35);
+        border:1px solid var(--accent,#ff6b35);border-radius:12px;padding:13px;
+        font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;
+        cursor:pointer;transition:opacity .15s
+      ">Continue warmup</button>
+    </div>
+  `;
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+
+  document.getElementById('warmup-yes-btn').onclick=()=>{
+    S.currentSession.warmupCheckDone=true;
+    S.currentSession.exercises[ei].sets.forEach(s=>{s.warmup=false;});
+    renderSessionExercises();
+    saveState();
+    overlay.remove();
+  };
+
+  document.getElementById('warmup-continue-btn').onclick=()=>{
+    overlay.remove();
+  };
 }
 
 function removeExercise(ei){S.currentSession.exercises.splice(ei,1);renderSessionExercises();saveState();}
