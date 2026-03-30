@@ -40,6 +40,68 @@ function loadState(){
 function saveState(){try{localStorage.setItem('ironlog_v6',JSON.stringify(S));}catch(e){}}
 
 // ══════════════════════════════════════════════
+//  EXERCISE HELP SYSTEM
+// ══════════════════════════════════════════════
+let EXERCISE_HELP={};
+let currentHelpExerciseId=null;
+
+function loadExerciseHelp(){
+  fetch('exercise-help.json')
+    .then(r=>r.json())
+    .then(data=>{EXERCISE_HELP=data||{}})
+    .catch(e=>{console.log('Exercise help file not found or failed to load');EXERCISE_HELP={};});
+}
+
+function getExerciseHelpId(exerciseName){
+  if(!exerciseName)return null;
+  // Normalize exercise name to ID format: lowercase, replace spaces/hyphens with underscores
+  const normalized=exerciseName.toLowerCase()
+    .trim()
+    .replace(/\s+/g,'_')
+    .replace(/[&]/g,'and')
+    .replace(/[^a-z0-9_]/g,'')
+    .replace(/_+/g,'_')
+    .replace(/^_+|_+$/g,'');
+  return normalized;
+}
+
+function getExerciseHelp(exerciseName){
+  if(!exerciseName)return null;
+  const helpId=getExerciseHelpId(exerciseName);
+  return helpId&&EXERCISE_HELP[helpId]?EXERCISE_HELP[helpId]:null;
+}
+
+function openExerciseHelp(exerciseName){
+  const help=getExerciseHelp(exerciseName);
+  if(!help||!help.youtubeId)return;
+  currentHelpExerciseId=exerciseName;
+  const modal=document.getElementById('help-modal');
+  if(!modal)return;
+  const title=document.getElementById('help-modal-title');
+  const iframe=document.getElementById('help-video-iframe');
+  if(title)title.textContent=help.label||exerciseName;
+  if(iframe){
+    iframe.src=`https://www.youtube.com/embed/${help.youtubeId}`;
+  }
+  modal.classList.add('open');
+}
+
+function closeExerciseHelp(){
+  const modal=document.getElementById('help-modal');
+  const iframe=document.getElementById('help-video-iframe');
+  if(modal)modal.classList.remove('open');
+  if(iframe)iframe.src='';
+  currentHelpExerciseId=null;
+}
+
+function openExerciseHelpExternal(exerciseName){
+  const help=getExerciseHelp(exerciseName);
+  if(help&&help.youtubeId){
+    window.open(`https://www.youtube.com/watch?v=${help.youtubeId}`,'_blank');
+  }
+}
+
+// ══════════════════════════════════════════════
 //  TIMER
 // ══════════════════════════════════════════════
 let timerInterval=null;
@@ -897,6 +959,8 @@ function buildExBlock(ex,ei){
   const exKey=`ex-${ei}`;
   const isExpanded=S.currentSession.expandedExercises[exKey]!==false;
   const collapseIcon=isExpanded?'▼':'▶';
+  const hasHelp=getExerciseHelp(ex.name)!==null;
+  const helpBtn=hasHelp?`<button class="icon-btn" onclick="openExerciseHelp('${ex.name.replace(/'/g,"\\'")}')" title="View help video" style="font-size:12px;color:var(--accent)">📹</button>`:'';
   block.innerHTML=`
     <div class="ex-header" onclick="toggleExerciseCollapse(${ei})" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)">
       <div style="min-width:0;flex:1;display:flex;align-items:center;gap:10px">
@@ -908,7 +972,8 @@ function buildExBlock(ex,ei){
           <div class="ex-ts">Added ${timeStr(ex.timestamp)}</div>
         </div>
       </div>
-      <div class="ex-actions" onclick="event.stopPropagation()">
+      <div class="ex-actions" onclick="event.stopPropagation()" style="display:flex;gap:4px;align-items:center">
+        ${helpBtn}
         <button class="icon-btn" onclick="toggleChangeEx(${ei})" title="Change exercise" style="font-size:11px;color:var(--muted2)">&#8644;</button>
         <button class="icon-btn del" onclick="removeExercise(${ei})">&#10005;</button>
       </div>
@@ -1703,11 +1768,13 @@ function showToast(msg,isPr){
 //  INIT
 // ══════════════════════════════════════════════
 loadState();
+loadExerciseHelp();
 applyTheme((S.themes&&S.themes.active)||'dark');
 updateThemeBadges();
 renderDayGrid();
 if(S.currentSession){
   document.getElementById('log-home').style.display='none';
   document.getElementById('log-active').style.display='block';
-  renderActiveSession();startTimer();
+  renderActiveSession();
+  if(S.currentSession.isRunning)startTimer();
 }
