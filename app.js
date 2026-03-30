@@ -22,6 +22,10 @@ let S={
   prs:{},
   cardioPrs:{},
   customExercises:[],
+  warmupSettings:{
+    enabled:true,
+    defaultCount:4
+  },
   themes:{
     active:'dark',
     dark:{bg:'#0d0d0d',surface:'#181818',textBody:'#f2f2f2',textHead:'#ffffff',accent:'#ff6b35'},
@@ -811,16 +815,38 @@ function renderDayGrid(){
 
 function selectDay(dayId){
   if(!S.currentSession||S.currentSession.dayId!==dayId){
-    S.currentSession={dayId,startTime:Date.now(),exercises:[]};
+    S.currentSession={dayId,startTime:Date.now(),exercises:[],isRunning:false};
     saveState();
   }
   document.getElementById('log-home').style.display='none';
   document.getElementById('log-active').style.display='block';
-  renderActiveSession();startTimer();
+  renderActiveSession();
+}
+
+function startWorkout(){
+  if(!S.currentSession)return;
+  if(S.currentSession.isRunning)return;
+  S.currentSession.isRunning=true;
+  S.currentSession.startTime=Date.now();
+  saveState();
+  startTimer();
+  renderActiveSession();
+}
+
+function pauseWorkout(){
+  if(!S.currentSession||!S.currentSession.isRunning)return;
+  S.currentSession.isRunning=false;
+  stopTimer();
+  saveState();
+  renderActiveSession();
 }
 
 function renderActiveSession(){
   const def=allDayDefs().find(d=>d.id===S.currentSession.dayId);
+  const isRunning=S.currentSession&&S.currentSession.isRunning;
+  const startPauseBtn=isRunning
+    ?`<button class="timer-btn" onclick="pauseWorkout()" title="Pause workout">Pause</button>`
+    :`<button class="timer-btn" onclick="startWorkout()" title="Start workout">Start</button>`;
   document.getElementById('log-active').innerHTML=`
     <button class="back-btn" onclick="backToDaySelect()" style="padding-top:calc(env(safe-area-inset-top,0px) + 14px)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -828,18 +854,21 @@ function renderActiveSession(){
     </button>
     <div class="workout-view">
       <div class="timer-bar">
-        <div><div class="timer-display" id="timer-display">00:00</div><div class="timer-label">Elapsed</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px">
+          ${startPauseBtn}
+        </div>
         <div class="timer-center"><div class="rest-display" id="rest-display">00:00</div><div class="timer-label">Rest</div></div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <button class="timer-btn" onclick="finishWorkout()">Finish Workout</button>
-          <button class="timer-cancel-btn" onclick="cancelWorkout()">Cancel Workout</button>
+          <button class="timer-btn" onclick="finishWorkout()">Finish</button>
+          <button class="timer-cancel-btn" onclick="cancelWorkout()">Cancel</button>
         </div>
       </div>
+      <button class="add-ex-btn sticky" onclick="openAddExercise()"><span style="font-size:18px">+</span> Add Exercise</button>
       <div id="session-exercises"></div>
-      <button class="add-ex-btn" onclick="openAddExercise()"><span style="font-size:18px">+</span> Add Exercise</button>
       <div style="height:10px"></div>
     </div>`;
   renderSessionExercises();
+  if(isRunning)startTimer();
   startRestTimer();
 }
 
@@ -863,29 +892,48 @@ function buildExBlock(ex,ei){
         ${variations.map(v=>`<option value="${v}"${ex.variation===v?' selected':''}>${v}</option>`).join('')}
       </select>`
     :'';
+  // Collapse state: default to expanded for first exercise, collapsed for others
+  if(!S.currentSession.expandedExercises)S.currentSession.expandedExercises={};
+  const exKey=`ex-${ei}`;
+  const isExpanded=S.currentSession.expandedExercises[exKey]!==false;
+  const collapseIcon=isExpanded?'▼':'▶';
   block.innerHTML=`
-    <div class="ex-header">
-      <div style="min-width:0;flex:1">
-        <div class="ex-name">${displayName}</div>
-        ${variationSel}
-        <div class="ex-meta">${ex.muscle}${!isCardio?` &middot; ${resolved.targetSets} sets &middot; ${resolved.targetReps}${targetWt}`:''}</div>
-        <div class="ex-ts">Added ${timeStr(ex.timestamp)}</div>
+    <div class="ex-header" onclick="toggleExerciseCollapse(${ei})" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)">
+      <div style="min-width:0;flex:1;display:flex;align-items:center;gap:10px">
+        <div style="font-size:14px;color:var(--muted);flex:0 0 auto;width:16px;text-align:center">${collapseIcon}</div>
+        <div style="min-width:0;flex:1">
+          <div class="ex-name">${displayName}</div>
+          ${variationSel}
+          <div class="ex-meta">${ex.muscle}${!isCardio?` &middot; ${resolved.targetSets} sets &middot; ${resolved.targetReps}${targetWt}`:''}</div>
+          <div class="ex-ts">Added ${timeStr(ex.timestamp)}</div>
+        </div>
       </div>
-      <div class="ex-actions">
-        ${hasPR?`<span class="pr-badge">PR</span>`:''}
+      <div class="ex-actions" onclick="event.stopPropagation()">
         <button class="icon-btn" onclick="toggleChangeEx(${ei})" title="Change exercise" style="font-size:11px;color:var(--muted2)">&#8644;</button>
         <button class="icon-btn del" onclick="removeExercise(${ei})">&#10005;</button>
       </div>
     </div>
+    ${isExpanded?`
     <div class="change-ex-bar" id="change-bar-${ei}">
       <input class="change-ex-search" id="change-search-${ei}" placeholder="Search to swap exercise..." oninput="filterChangeEx(${ei},this.value)">
       <div class="change-ex-list" id="change-list-${ei}"></div>
     </div>
     <div id="sets-${ei}"></div>
-    <button class="add-set-btn" onclick="addSet(${ei})">+ Add Set</button>`;
+    <button class="add-set-btn" onclick="addSet(${ei})">+ Add Set</button>
+    `:'<div style="display:none" id="change-bar-${ei}"></div><div style="display:none" id="sets-${ei}"></div>'}`;
   const sc=block.querySelector(`#sets-${ei}`);
-  ex.sets.forEach((s,si)=>sc.appendChild(buildSetRow(ei,si,s,isCardio)));
+  if(isExpanded){
+    ex.sets.forEach((s,si)=>sc.appendChild(buildSetRow(ei,si,s,isCardio)));
+  }
   return block;
+}
+
+function toggleExerciseCollapse(ei){
+  if(!S.currentSession.expandedExercises)S.currentSession.expandedExercises={};
+  const exKey=`ex-${ei}`;
+  S.currentSession.expandedExercises[exKey]=!S.currentSession.expandedExercises[exKey];
+  saveState();
+  renderSessionExercises();
 }
 function setExVariation(ei,val){
   S.currentSession.exercises[ei].variation=val;saveState();
@@ -944,34 +992,36 @@ function buildSetRow(ei,si,set,isCardio){
   const weightForPR=isDumbbell?set.weight*2:set.weight;
   const pr=!isWarmup&&isPR(exName,weightForPR,set.reps);
   const prStatus=!isWarmup&&set.weight&&set.reps?getPRStatus(exName,weightForPR,set.reps):null;
-  const prBadgeHtml=isWarmup?'<div></div>':prStatus==='up'?`<div style="background:#39d98a;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">+ </div>`:prStatus==='equal'?`<div style="background:#007aff;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">= </div>`:prStatus==='down'?`<div style="background:#ff4d6d;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">− </div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
+  // PR display: show symbol system only (+/=/−), remove separate "PR" label
+  const prSymbol=prStatus==='up'?'+':prStatus==='equal'?'=':prStatus==='down'?'−':'';
+  const prBadgeHtml=isWarmup?'<div></div>':!prSymbol?'<div></div>':`<div style="background:${prStatus==='up'?'#39d98a':prStatus==='equal'?'#007aff':'#ff4d6d'};color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">${prSymbol} </div>`;
   row.className=`set-row${pr?' pr':''}${isWarmup?' warmup-row':''}`;row.id=`set-${ei}-${si}`;
 
-  const restHtml=set.rest?`<div style="font-size:9px;color:var(--accent);margin-top:2px;font-weight:600">${set.rest}m rest</div>`:'';
+  const restDisplay=set.rest?`<span style="font-size:11px;color:var(--accent);font-weight:600;min-width:40px;text-align:right">${set.rest}m</span>`:'<span style="min-width:40px;text-align:right"></span>';
+  const isFirstSet=si===0;
+  const exNameDisplay=isFirstSet?`<span style="font-size:12px;color:var(--muted2);font-weight:500;min-width:60px;flex:0 0 60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${exName}</span>`:'<span style="min-width:60px;flex:0 0 60px"></span>';
 
   if(isDumbbell){
     row.innerHTML=`
-      <div style="text-align:center">
-        <div class="set-num">${si+1}</div>
-        ${restHtml}
+      <div class="set-num" style="flex:0 0 28px;text-align:center">${si+1}</div>
+      <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup" style="flex:0 0 28px;padding:0">W</button>
+      ${exNameDisplay}
+      <div style="display:flex;align-items:center;gap:4px;flex:1;min-width:80px">
+        <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)" style="flex:1;min-width:0">
+        <span style="font-size:11px;color:var(--muted);white-space:nowrap;flex:0 0 auto">×2</span>
+        <span style="font-size:12px;color:var(--muted2);font-weight:500;min-width:30px;text-align:right">${displayWeight?displayWeight+'':'-'}</span>
       </div>
-      <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
-      <div style="display:flex;align-items:center;gap:6px;flex:1">
-        <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)" style="flex:1">
-        <span style="font-size:12px;color:var(--muted);white-space:nowrap">× 2</span>
-        <span style="font-size:13px;color:var(--muted2);font-weight:500;min-width:30px;text-align:right">${displayWeight?displayWeight+'':'-'}</span>
-      </div>
-      <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
+      <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)" style="flex:0 0 50px">
+      ${restDisplay}
       ${prBadgeHtml}`;
   }else{
     row.innerHTML=`
-      <div style="text-align:center">
-        <div class="set-num">${si+1}</div>
-        ${restHtml}
-      </div>
-      <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup">W</button>
-      <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)">
-      <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)">
+      <div class="set-num" style="flex:0 0 28px;text-align:center">${si+1}</div>
+      <button class="warmup-btn${isWarmup?' active':''}" onclick="toggleWarmup(${ei},${si})" title="Mark as warmup" style="flex:0 0 28px;padding:0">W</button>
+      ${exNameDisplay}
+      <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'weight',this.value)" style="flex:1;min-width:0">
+      <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onfocus="scrollToCenter(this)" onchange="updateSet(${ei},${si},'reps',this.value)" style="flex:0 0 50px">
+      ${restDisplay}
       ${prBadgeHtml}`;
   }
   return row;
@@ -1001,9 +1051,10 @@ function addSet(ei){
 
   let warmupDefault=false;
   const isFirstEx=ei===0;
-  if(isFirstEx&&!isCardio){
+  const warmupSettings=S.warmupSettings||{enabled:true,defaultCount:4};
+  if(isFirstEx&&!isCardio&&warmupSettings.enabled){
     if(!S.currentSession.warmupCheckDone){
-      warmupDefault=sets.length<4;
+      warmupDefault=sets.length<warmupSettings.defaultCount;
     }
   }
 
@@ -1019,7 +1070,7 @@ function addSet(ei){
   resetRestTimer();
   saveState();
 
-  if(isFirstEx&&!isCardio&&!S.currentSession.warmupCheckDone&&(sets.length===4||sets.length===5)){
+  if(isFirstEx&&!isCardio&&!S.currentSession.warmupCheckDone&&(sets.length===warmupSettings.defaultCount||sets.length===warmupSettings.defaultCount+1)){
     showWarmupCheckDialog(ei);
   }
 }
@@ -1040,13 +1091,10 @@ function updateSet(ei,si,field,val){
   }
   const prStatus=!isWarmup&&set.weight&&set.reps?getPRStatus(name,weightForPR,set.reps):null;
   const badge=row.querySelector('div:last-child');
-  if(badge)badge.outerHTML=isWarmup?`<div class="wu-badge">WU</div>`:prStatus==='up'?`<div style="background:#39d98a;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">+ </div>`:prStatus==='equal'?`<div style="background:#007aff;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">= </div>`:prStatus==='down'?`<div style="background:#ff4d6d;color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">− </div>`:pr?`<div class="pr-badge">PR</div>`:'<div></div>';
-  const block=document.getElementById(`ex-block-${ei}`);
-  if(block){
-    const anyPR=S.currentSession.exercises[ei].sets.some(s=>!s.warmup&&isPR(name,isDumb?s.weight*2:s.weight,s.reps));
-    const existing=block.querySelector('.ex-actions .pr-badge');
-    if(anyPR&&!existing)block.querySelector('.icon-btn.del').insertAdjacentHTML('beforebegin','<span class="pr-badge">PR</span>');
-    else if(!anyPR&&existing)existing.remove();
+  if(badge){
+    // PR display: show symbol system only (+/=/−), remove separate "PR" label
+    const prSymbol=prStatus==='up'?'+':prStatus==='equal'?'=':prStatus==='down'?'−':'';
+    badge.outerHTML=isWarmup?'<div></div>':!prSymbol?'<div></div>':`<div style="background:${prStatus==='up'?'#39d98a':prStatus==='equal'?'#007aff':'#ff4d6d'};color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">${prSymbol} </div>`;
   }
   saveState();
 }
@@ -1269,7 +1317,17 @@ function addExToSession(ex){
   const isCardio=CARDIO_EXERCISES.has(resolved.name)||resolved.muscle==='Cardio';
   const initSet=isCardio?{time:'',speed:'',resistance:'',ts:Date.now()}:{weight:'',reps:'',ts:Date.now(),warmup:false};
   S.currentSession.exercises.unshift({...resolved,timestamp:Date.now(),sets:[initSet]});
-  saveState();renderSessionExercises();
+  // Collapse all other exercises and expand only the new one (at index 0)
+  if(!S.currentSession.expandedExercises)S.currentSession.expandedExercises={};
+  Object.keys(S.currentSession.expandedExercises).forEach(k=>S.currentSession.expandedExercises[k]=false);
+  S.currentSession.expandedExercises['ex-0']=true;
+  saveState();
+  renderSessionExercises();
+  // Scroll new exercise into view
+  setTimeout(()=>{
+    const newExBlock=document.getElementById('ex-block-0');
+    if(newExBlock)scrollToCenter(newExBlock);
+  },100);
 }
 
 // ══════════════════════════════════════════════
