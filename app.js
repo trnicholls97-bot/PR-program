@@ -40,6 +40,79 @@ function loadState(){
 function saveState(){try{localStorage.setItem('ironlog_v6',JSON.stringify(S));}catch(e){}}
 
 // ══════════════════════════════════════════════
+//  ACCOUNT & AUTH SYSTEM
+// ══════════════════════════════════════════════
+let currentUser=null;
+
+function updateAccountSection(){
+  const section=document.getElementById('account-section');
+  if(!section)return;
+
+  if(currentUser){
+    // User is logged in - show account info and logout button
+    const avatar=currentUser.photoURL
+      ?`<img src="${currentUser.photoURL}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+      :`<div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${(currentUser.displayName||currentUser.email||'?')[0].toUpperCase()}</div>`;
+    const name=currentUser.displayName?.split(' ')[0]||currentUser.email?.split('@')[0]||'Account';
+    const email=currentUser.email||'';
+    section.innerHTML=`
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:12px">
+        ${avatar}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${name}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${email}</div>
+        </div>
+      </div>
+      <button onclick="handleLogout()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:'Barlow',sans-serif;font-weight:600;cursor:pointer;font-size:14px">Sign Out</button>
+    `;
+  }else{
+    // User is not logged in - show login button
+    section.innerHTML=`
+      <div style="text-align:center;padding:12px">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Sign in to sync across devices and backup your data</div>
+        <button onclick="handleLoginClick()" style="width:100%;padding:12px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'Barlow',sans-serif;font-weight:700;cursor:pointer;font-size:14px">Sign In with Google</button>
+      </div>
+    `;
+  }
+}
+
+function handleLoginClick(){
+  // Trigger the Google sign-in flow - the firebase-sync.js will handle the auth UI
+  // If auth overlay doesn't exist, show it
+  if(!document.getElementById('auth-overlay')){
+    // Call buildAuthUI from firebase-sync - we need to ensure it's accessible
+    // For now, we can trigger the sign-in through Firebase directly if available
+    if(window.firebase&&window.firebase.auth){
+      const provider=new window.firebase.auth.GoogleAuthProvider();
+      window.firebase.auth().signInWithPopup(provider).catch(err=>{
+        if(err.code==='auth/popup-blocked'){
+          showToast('Popup blocked. Allow popups for this site to sign in.',false);
+        }else{
+          showToast('Sign in failed. Please try again.',false);
+        }
+      });
+    }
+  }
+}
+
+function handleLogout(){
+  if(!confirm('Sign out? Your data will remain synced to your Google account.')){
+    return;
+  }
+  if(window.firebase&&window.firebase.auth){
+    window.firebase.auth().signOut().catch(err=>{
+      showToast('Sign out failed. Please try again.',false);
+    });
+  }
+}
+
+// Function called by firebase-sync.js to update auth state
+window.updateAuthState=function(user){
+  currentUser=user;
+  updateAccountSection();
+};
+
+// ══════════════════════════════════════════════
 //  EXERCISE HELP SYSTEM
 // ══════════════════════════════════════════════
 let EXERCISE_HELP={};
@@ -931,7 +1004,8 @@ function renderActiveSession(){
     </div>`;
   renderSessionExercises();
   if(isRunning)startTimer();
-  startRestTimer();
+  // Note: Rest timer will start automatically after the first set is logged,
+  // not when the exercise/workout is created
 }
 
 function renderSessionExercises(){
@@ -1161,6 +1235,23 @@ function updateSet(ei,si,field,val){
     const prSymbol=prStatus==='up'?'+':prStatus==='equal'?'=':prStatus==='down'?'−':'';
     badge.outerHTML=isWarmup?'<div></div>':!prSymbol?'<div></div>':`<div style="background:${prStatus==='up'?'#39d98a':prStatus==='equal'?'#007aff':'#ff4d6d'};color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">${prSymbol} </div>`;
   }
+
+  // Start rest timer only after the first set with actual logged data
+  const ex=S.currentSession.exercises[ei];
+  const isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
+  const hasLoggedFirstSet=isCardio
+    ?ex.sets.some(s=>s.time||s.speed||s.resistance)
+    :(ex.sets.some(s=>!s.hasStartedRestTimer&&(s.weight||s.reps))||ex.hasLoggedFirstSet);
+  if(!isCardio&&set.weight&&set.reps&&!ex.hasLoggedFirstSet){
+    // First set with actual data logged - start rest timer
+    ex.hasLoggedFirstSet=true;
+    resetRestTimer();
+  }
+  if(isCardio&&hasLoggedFirstSet&&!ex.hasLoggedFirstSet){
+    ex.hasLoggedFirstSet=true;
+    resetRestTimer();
+  }
+
   saveState();
 }
 
@@ -1771,6 +1862,7 @@ loadState();
 loadExerciseHelp();
 applyTheme((S.themes&&S.themes.active)||'dark');
 updateThemeBadges();
+updateAccountSection();
 renderDayGrid();
 if(S.currentSession){
   document.getElementById('log-home').style.display='none';
