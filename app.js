@@ -124,7 +124,7 @@ let EXERCISE_HELP={};
 let currentHelpExerciseId=null;
 
 function loadExerciseHelp(){
-  fetch('/PR-program/resources/exercise-help.json')
+  fetch('exercise-help.json')
     .then(r=>r.json())
     .then(data=>{EXERCISE_HELP=data||{}})
     .catch(e=>{console.log('Exercise help file not found or failed to load');EXERCISE_HELP={};});
