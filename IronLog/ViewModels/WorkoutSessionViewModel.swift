@@ -110,10 +110,11 @@ class WorkoutSessionViewModel {
         let duration = workoutElapsed
 
         // Calculate total calories burned across all exercises
-        let calories = appState.calorieService.calculateCalories(
-            session: currentSession,
-            profile: appState.profile,
-            duration: duration
+        let durationHours = duration / 3600.0
+        let calories = appState.calorieService.caloriesBurned(
+            exercises: currentSession.exercises,
+            durationHours: durationHours,
+            profile: appState.profile
         )
 
         let completed = CompletedWorkout(

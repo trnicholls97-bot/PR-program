@@ -212,7 +212,6 @@ struct ExerciseBlockView: View {
         let isWarmup = warmupEnabled && sets.count < warmupCount
 
         // Use last set values, or fall back to target
-        let lastWorkingSet = sets.last(where: { !$0.warmup })
         let lastWeight: Double
         let lastReps: Int
 
@@ -223,8 +222,6 @@ struct ExerciseBlockView: View {
             lastWeight = exercise.targetWeight
             lastReps = Int(exercise.targetReps) ?? 5
         }
-
-        _ = lastWorkingSet  // unused warning suppression
 
         sessionVM.addSet(
             to: exercise.id,
