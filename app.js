@@ -177,11 +177,20 @@ function openExerciseHelpExternal(exerciseName){
 // ══════════════════════════════════════════════
 //  TIMER
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+//  TIMER STATE & MANAGEMENT
+// ══════════════════════════════════════════════
 let timerInterval=null;
 let restTimerInterval=null;
 let restTimerStart=0;
+let restTimerPausedTime=0; // Track paused rest time for resume
+
+// Timer state flags (source of truth)
+let isWorkoutTimerRunning=false;
+let isRestTimerRunning=false;
+
 function startTimer(){
-  if(timerInterval)return;
+  if(timerInterval||!isWorkoutTimerRunning)return;
   timerInterval=setInterval(()=>{
     const el=document.getElementById('timer-display');
     if(!el||!S.currentSession)return;
@@ -190,10 +199,22 @@ function startTimer(){
     el.textContent=h>0?`${h}:${pad(m)}:${pad(s)}`:`${pad(m)}:${pad(s)}`;
   },1000);
 }
-function stopTimer(){clearInterval(timerInterval);timerInterval=null;stopRestTimer();}
+
+function stopTimer(){
+  // Only stops the main timer, not rest timer
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval=null;
+  }
+  isWorkoutTimerRunning=false;
+}
+
 function startRestTimer(){
-  restTimerStart=Date.now();
-  if(restTimerInterval)return;
+  // Only start if rest timer is not already running
+  if(isRestTimerRunning||restTimerInterval)return;
+  isRestTimerRunning=true;
+  restTimerStart=Date.now()-restTimerPausedTime; // Account for paused time
+  restTimerPausedTime=0;
   restTimerInterval=setInterval(()=>{
     const el=document.getElementById('rest-display');if(!el)return;
     const sec=Math.floor((Date.now()-restTimerStart)/1000);
@@ -202,9 +223,36 @@ function startRestTimer(){
     el.classList.add('active');
   },1000);
 }
-function stopRestTimer(){clearInterval(restTimerInterval);restTimerInterval=null;}
+
+function pauseRestTimer(){
+  // Save the elapsed time for resume
+  if(restTimerInterval){
+    restTimerPausedTime=Date.now()-restTimerStart;
+    clearInterval(restTimerInterval);
+    restTimerInterval=null;
+  }
+  isRestTimerRunning=false;
+}
+
+function stopRestTimer(){
+  // Complete stop and reset
+  if(restTimerInterval){
+    clearInterval(restTimerInterval);
+    restTimerInterval=null;
+  }
+  isRestTimerRunning=false;
+  restTimerPausedTime=0;
+}
+
 function resetRestTimer(){
+  // Reset rest timer to 00:00 and prepare to start
   restTimerStart=Date.now();
+  restTimerPausedTime=0;
+  isRestTimerRunning=false;
+  if(restTimerInterval){
+    clearInterval(restTimerInterval);
+    restTimerInterval=null;
+  }
   const el=document.getElementById('rest-display');
   if(el){el.textContent='00:00';el.classList.add('active');}
 }
@@ -960,25 +1008,36 @@ function selectDay(dayId){
 
 function startWorkout(){
   if(!S.currentSession)return;
-  if(S.currentSession.isRunning)return;
+  if(isWorkoutTimerRunning)return; // Prevent double-start
+
   S.currentSession.isRunning=true;
+  isWorkoutTimerRunning=true;
   S.currentSession.startTime=Date.now();
   saveState();
   startTimer();
+  // Resume rest timer if it was paused
+  if(restTimerPausedTime>0){
+    startRestTimer();
+  }
   renderActiveSession();
 }
 
 function pauseWorkout(){
-  if(!S.currentSession||!S.currentSession.isRunning)return;
+  if(!S.currentSession||!isWorkoutTimerRunning)return;
+
   S.currentSession.isRunning=false;
+  isWorkoutTimerRunning=false;
   stopTimer();
+  // CRITICAL: Also pause rest timer on pause
+  pauseRestTimer();
   saveState();
   renderActiveSession();
 }
 
 function renderActiveSession(){
   const def=allDayDefs().find(d=>d.id===S.currentSession.dayId);
-  const isRunning=S.currentSession&&S.currentSession.isRunning;
+  // Use timer state as source of truth, not just S.currentSession.isRunning
+  const isRunning=isWorkoutTimerRunning;
   const startPauseBtn=isRunning
     ?`<button class="timer-btn" onclick="pauseWorkout()" title="Pause workout">Pause</button>`
     :`<button class="timer-btn" onclick="startWorkout()" title="Start workout">Start</button>`;
@@ -1312,6 +1371,8 @@ function showWarmupCheckDialog(ei){
 function removeExercise(ei){S.currentSession.exercises.splice(ei,1);renderSessionExercises();saveState();}
 function backToDaySelect(){
   stopTimer();stopRestTimer();
+  isWorkoutTimerRunning=false;
+  isRestTimerRunning=false;
   document.getElementById('log-active').style.display='none';
   document.getElementById('log-home').style.display='block';
   renderDayGrid();
@@ -1319,7 +1380,10 @@ function backToDaySelect(){
 function cancelWorkout(){
   if(!confirm('Cancel this workout? All progress will be lost.'))return;
   S.currentSession=null;
-  stopTimer();stopRestTimer();saveState();
+  stopTimer();stopRestTimer();
+  isWorkoutTimerRunning=false;
+  isRestTimerRunning=false;
+  saveState();
   document.getElementById('log-active').style.display='none';
   document.getElementById('log-home').style.display='block';
   renderDayGrid();
@@ -1369,7 +1433,10 @@ function finishWorkout(){
     exercises:JSON.parse(JSON.stringify(S.currentSession.exercises)),
     calories:calcWorkoutCalories(S.currentSession.exercises,duration),
   });
-  S.currentSession=null;stopTimer();stopRestTimer();saveState();
+  S.currentSession=null;stopTimer();stopRestTimer();
+  isWorkoutTimerRunning=false;
+  isRestTimerRunning=false;
+  saveState();
   showSummary({def,duration,exercises:S.workouts[0].exercises,newPRs,weightUpdates,calories:S.workouts[0].calories});
   document.getElementById('log-active').style.display='none';
   document.getElementById('log-home').style.display='block';
@@ -1824,7 +1891,9 @@ function clearAllData(){
   S.profile={age:'',sex:'',weight:'',ft:'',in:'',formula:'mifflin',bfPct:'',neck:'',waist:'',hip:''};
   S.customDays=[];
   S.dayPlans=JSON.parse(JSON.stringify(DEFAULT_DAY_PLANS));
-  saveState();stopTimer();
+  saveState();stopTimer();stopRestTimer();
+  isWorkoutTimerRunning=false;
+  isRestTimerRunning=false;
   document.getElementById('log-active').style.display='none';
   document.getElementById('log-home').style.display='block';
   renderDayGrid();renderRecords();renderHistory();renderCustomExList();loadProfileInputs();
@@ -1867,6 +1936,10 @@ renderDayGrid();
 if(S.currentSession){
   document.getElementById('log-home').style.display='none';
   document.getElementById('log-active').style.display='block';
+  // Restore timer state from saved session
+  isWorkoutTimerRunning=S.currentSession.isRunning||false;
+  if(S.currentSession.isRunning){
+    startTimer();
+  }
   renderActiveSession();
-  if(S.currentSession.isRunning)startTimer();
 }
