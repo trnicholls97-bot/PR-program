@@ -76,7 +76,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .change-ex-opt:last-child{border-bottom:none}
 .change-ex-opt:active{background:var(--surface3)}
 /* SETS */
-.set-row{display:grid;grid-template-columns:28px auto 1fr 1fr 38px;align-items:center;gap:5px;padding:9px 14px;border-bottom:1px solid var(--border);transition:background .2s}
+.set-row{display:grid;grid-template-columns:28px 28px 60px 1fr 50px 40px 38px;align-items:center;gap:5px;padding:9px 14px;border-bottom:1px solid var(--border);transition:background .2s}
 .set-row:last-of-type{border-bottom:none}
 .set-row.pr{background:rgba(255,107,53,.06)}
 .set-row.warmup-row{background:rgba(255,200,50,.12)}
@@ -94,10 +94,11 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .add-set-btn:active{background:var(--accent-dim)}
 .add-ex-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:14px;background:var(--surface);border:1px dashed var(--border);color:var(--accent);font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;transition:all .15s}
 .add-ex-btn:active{background:var(--accent-dim);border-color:var(--accent-border)}
+.add-ex-btn.sticky{position:sticky;top:0;margin-bottom:0;z-index:100;margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px;width:calc(100% + 28px)}
 /* VARIATION SELECT */
 .variation-select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--muted2);font-family:'Barlow',sans-serif;font-size:11px;padding:3px 6px;outline:none;cursor:pointer;margin-top:3px;max-width:160px}
 /* CARDIO SET ROW */
-.set-row.cardio-row{grid-template-columns:28px 1fr 1fr 1fr 38px}
+.set-row.cardio-row{grid-template-columns:28px 1fr 1fr 1fr 1fr 38px}
 .cardio-label{font-size:9px;color:var(--muted);text-align:center;margin-top:2px;letter-spacing:.04em;text-transform:uppercase}
 /* RECORDS */
 .muscle-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer}
