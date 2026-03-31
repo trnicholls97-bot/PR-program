@@ -1,0 +1,42 @@
+{
+  "dumbbell_curl": {
+    "youtubeId": "ykJmrZ5v0Oo",
+    "label": "How to do Dumbbell Curls"
+  },
+  "barbell_bench_press": {
+    "youtubeId": "rT7DgCr-3pg",
+    "label": "Barbell Bench Press Form"
+  },
+  "squat": {
+    "youtubeId": "MVMKyeo8ZBw",
+    "label": "Perfect Squat Form Guide"
+  },
+  "deadlift": {
+    "youtubeId": "VL5Ab0T5f6M",
+    "label": "Deadlift Technique Tutorial"
+  },
+  "pull_ups": {
+    "youtubeId": "eGo4IYlbE5g",
+    "label": "Pull-ups for Beginners"
+  },
+  "shoulder_press": {
+    "youtubeId": "2yjwXTZQDDI",
+    "label": "Overhead Shoulder Press"
+  },
+  "lat_pulldown": {
+    "youtubeId": "VDx3-w0vJc8",
+    "label": "Lat Pulldown Form"
+  },
+  "leg_press": {
+    "youtubeId": "IZxyjW7MIAI",
+    "label": "Leg Press Technique"
+  },
+  "chest_fly": {
+    "youtubeId": "eoCs6sr0yS8",
+    "label": "Dumbbell Chest Fly"
+  },
+  "rows": {
+    "youtubeId": "pYcpY20QrgY",
+    "label": "Barbell Row Form"
+  }
+}
