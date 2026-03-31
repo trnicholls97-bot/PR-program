@@ -1,3 +1,8 @@
+// IronLog - Main Application Logic
+// Handles UI orchestration, event wiring, timer management, workout flow,
+// exercise management, user authentication, and cross-feature coordination.
+// This is the primary runtime for the application.
+
 // ══════════════════════════════════════════════
 //  CONSTANTS
 // ══════════════════════════════════════════════
@@ -119,7 +124,7 @@ let EXERCISE_HELP={};
 let currentHelpExerciseId=null;
 
 function loadExerciseHelp(){
-  fetch('exercise-help.json')
+  fetch('../resources/exercise-help.json')
     .then(r=>r.json())
     .then(data=>{EXERCISE_HELP=data||{}})
     .catch(e=>{console.log('Exercise help file not found or failed to load');EXERCISE_HELP={};});

@@ -1,3 +1,8 @@
+// Firebase Synchronization & Authentication
+// Handles all Firebase setup, authentication flows, Firestore data sync,
+// user session management, and cloud persistence logic.
+// Isolated from app logic - Firebase-specific concerns only.
+
 // ══════════════════════════════════════════════
 //  IRONLOG — FIREBASE SYNC LAYER
 //  Drop this AFTER your main app script block.

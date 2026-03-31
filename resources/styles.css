@@ -1,3 +1,8 @@
+/* IronLog - Application Styles
+   All visual styling for the workout tracking app including layout,
+   theming, typography, and component-specific styles.
+   Supports both dark and light themes via CSS variables. */
+
 :root{
   --bg:#0d0d0d;--surface:#181818;--surface2:#222;--surface3:#2c2c2c;
   --border:#2e2e2e;--text:#f2f2f2;--muted:#5a5a5a;--muted2:#888;
