@@ -1,3 +1,7 @@
+// Exercise Library & Workout Data
+// Defines the exercise database, workout day plans, MET values for calorie
+// calculation, and muscle group organization. This is configuration data only.
+
 // ══════════════════════════════════════════════
 //  IRONLOG — WORKOUT DATA
 //  Edit this file to customize exercises,

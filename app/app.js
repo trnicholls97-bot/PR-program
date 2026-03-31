@@ -1,3 +1,8 @@
+// IronLog - Main Application Logic
+// Handles UI orchestration, event wiring, timer management, workout flow,
+// exercise management, user authentication, and cross-feature coordination.
+// This is the primary runtime for the application.
+
 // ══════════════════════════════════════════════
 //  CONSTANTS
 // ══════════════════════════════════════════════
@@ -40,13 +45,86 @@ function loadState(){
 function saveState(){try{localStorage.setItem('ironlog_v6',JSON.stringify(S));}catch(e){}}
 
 // ══════════════════════════════════════════════
+//  ACCOUNT & AUTH SYSTEM
+// ══════════════════════════════════════════════
+let currentUser=null;
+
+function updateAccountSection(){
+  const section=document.getElementById('account-section');
+  if(!section)return;
+
+  if(currentUser){
+    // User is logged in - show account info and logout button
+    const avatar=currentUser.photoURL
+      ?`<img src="${currentUser.photoURL}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+      :`<div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${(currentUser.displayName||currentUser.email||'?')[0].toUpperCase()}</div>`;
+    const name=currentUser.displayName?.split(' ')[0]||currentUser.email?.split('@')[0]||'Account';
+    const email=currentUser.email||'';
+    section.innerHTML=`
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:12px">
+        ${avatar}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${name}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${email}</div>
+        </div>
+      </div>
+      <button onclick="handleLogout()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:'Barlow',sans-serif;font-weight:600;cursor:pointer;font-size:14px">Sign Out</button>
+    `;
+  }else{
+    // User is not logged in - show login button
+    section.innerHTML=`
+      <div style="text-align:center;padding:12px">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Sign in to sync across devices and backup your data</div>
+        <button onclick="handleLoginClick()" style="width:100%;padding:12px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'Barlow',sans-serif;font-weight:700;cursor:pointer;font-size:14px">Sign In with Google</button>
+      </div>
+    `;
+  }
+}
+
+function handleLoginClick(){
+  // Trigger the Google sign-in flow - the firebase-sync.js will handle the auth UI
+  // If auth overlay doesn't exist, show it
+  if(!document.getElementById('auth-overlay')){
+    // Call buildAuthUI from firebase-sync - we need to ensure it's accessible
+    // For now, we can trigger the sign-in through Firebase directly if available
+    if(window.firebase&&window.firebase.auth){
+      const provider=new window.firebase.auth.GoogleAuthProvider();
+      window.firebase.auth().signInWithPopup(provider).catch(err=>{
+        if(err.code==='auth/popup-blocked'){
+          showToast('Popup blocked. Allow popups for this site to sign in.',false);
+        }else{
+          showToast('Sign in failed. Please try again.',false);
+        }
+      });
+    }
+  }
+}
+
+function handleLogout(){
+  if(!confirm('Sign out? Your data will remain synced to your Google account.')){
+    return;
+  }
+  if(window.firebase&&window.firebase.auth){
+    window.firebase.auth().signOut().catch(err=>{
+      showToast('Sign out failed. Please try again.',false);
+    });
+  }
+}
+
+// Function called by firebase-sync.js to update auth state
+window.updateAuthState=function(user){
+  currentUser=user;
+  updateAccountSection();
+};
+
+// ══════════════════════════════════════════════
 //  EXERCISE HELP SYSTEM
 // ══════════════════════════════════════════════
 let EXERCISE_HELP={};
 let currentHelpExerciseId=null;
 
 function loadExerciseHelp(){
-  fetch('exercise-help.json')
+  fetch('../resources/exercise-help.json')
     .then(r=>r.json())
     .then(data=>{EXERCISE_HELP=data||{}})
     .catch(e=>{console.log('Exercise help file not found or failed to load');EXERCISE_HELP={};});
@@ -104,11 +182,20 @@ function openExerciseHelpExternal(exerciseName){
 // ══════════════════════════════════════════════
 //  TIMER
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+//  TIMER STATE & MANAGEMENT
+// ══════════════════════════════════════════════
 let timerInterval=null;
 let restTimerInterval=null;
 let restTimerStart=0;
+let restTimerPausedTime=0; // Track paused rest time for resume
+
+// Timer state flags (source of truth)
+let isWorkoutTimerRunning=false;
+let isRestTimerRunning=false;
+
 function startTimer(){
-  if(timerInterval)return;
+  if(timerInterval||!isWorkoutTimerRunning)return;
   timerInterval=setInterval(()=>{
     const el=document.getElementById('timer-display');
     if(!el||!S.currentSession)return;
@@ -117,10 +204,22 @@ function startTimer(){
     el.textContent=h>0?`${h}:${pad(m)}:${pad(s)}`:`${pad(m)}:${pad(s)}`;
   },1000);
 }
-function stopTimer(){clearInterval(timerInterval);timerInterval=null;stopRestTimer();}
+
+function stopTimer(){
+  // Only stops the main timer, not rest timer
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval=null;
+  }
+  isWorkoutTimerRunning=false;
+}
+
 function startRestTimer(){
-  restTimerStart=Date.now();
-  if(restTimerInterval)return;
+  // Only start if rest timer is not already running
+  if(isRestTimerRunning||restTimerInterval)return;
+  isRestTimerRunning=true;
+  restTimerStart=Date.now()-restTimerPausedTime; // Account for paused time
+  restTimerPausedTime=0;
   restTimerInterval=setInterval(()=>{
     const el=document.getElementById('rest-display');if(!el)return;
     const sec=Math.floor((Date.now()-restTimerStart)/1000);
@@ -129,9 +228,36 @@ function startRestTimer(){
     el.classList.add('active');
   },1000);
 }
-function stopRestTimer(){clearInterval(restTimerInterval);restTimerInterval=null;}
+
+function pauseRestTimer(){
+  // Save the elapsed time for resume
+  if(restTimerInterval){
+    restTimerPausedTime=Date.now()-restTimerStart;
+    clearInterval(restTimerInterval);
+    restTimerInterval=null;
+  }
+  isRestTimerRunning=false;
+}
+
+function stopRestTimer(){
+  // Complete stop and reset
+  if(restTimerInterval){
+    clearInterval(restTimerInterval);
+    restTimerInterval=null;
+  }
+  isRestTimerRunning=false;
+  restTimerPausedTime=0;
+}
+
 function resetRestTimer(){
+  // Reset rest timer to 00:00 and prepare to start
   restTimerStart=Date.now();
+  restTimerPausedTime=0;
+  isRestTimerRunning=false;
+  if(restTimerInterval){
+    clearInterval(restTimerInterval);
+    restTimerInterval=null;
+  }
   const el=document.getElementById('rest-display');
   if(el){el.textContent='00:00';el.classList.add('active');}
 }
@@ -887,25 +1013,36 @@ function selectDay(dayId){
 
 function startWorkout(){
   if(!S.currentSession)return;
-  if(S.currentSession.isRunning)return;
+  if(isWorkoutTimerRunning)return; // Prevent double-start
+
   S.currentSession.isRunning=true;
+  isWorkoutTimerRunning=true;
   S.currentSession.startTime=Date.now();
   saveState();
   startTimer();
+  // Resume rest timer if it was paused
+  if(restTimerPausedTime>0){
+    startRestTimer();
+  }
   renderActiveSession();
 }
 
 function pauseWorkout(){
-  if(!S.currentSession||!S.currentSession.isRunning)return;
+  if(!S.currentSession||!isWorkoutTimerRunning)return;
+
   S.currentSession.isRunning=false;
+  isWorkoutTimerRunning=false;
   stopTimer();
+  // CRITICAL: Also pause rest timer on pause
+  pauseRestTimer();
   saveState();
   renderActiveSession();
 }
 
 function renderActiveSession(){
   const def=allDayDefs().find(d=>d.id===S.currentSession.dayId);
-  const isRunning=S.currentSession&&S.currentSession.isRunning;
+  // Use timer state as source of truth, not just S.currentSession.isRunning
+  const isRunning=isWorkoutTimerRunning;
   const startPauseBtn=isRunning
     ?`<button class="timer-btn" onclick="pauseWorkout()" title="Pause workout">Pause</button>`
     :`<button class="timer-btn" onclick="startWorkout()" title="Start workout">Start</button>`;
@@ -931,7 +1068,8 @@ function renderActiveSession(){
     </div>`;
   renderSessionExercises();
   if(isRunning)startTimer();
-  startRestTimer();
+  // Note: Rest timer will start automatically after the first set is logged,
+  // not when the exercise/workout is created
 }
 
 function renderSessionExercises(){
@@ -1161,6 +1299,23 @@ function updateSet(ei,si,field,val){
     const prSymbol=prStatus==='up'?'+':prStatus==='equal'?'=':prStatus==='down'?'−':'';
     badge.outerHTML=isWarmup?'<div></div>':!prSymbol?'<div></div>':`<div style="background:${prStatus==='up'?'#39d98a':prStatus==='equal'?'#007aff':'#ff4d6d'};color:#fff;border:none;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;text-transform:uppercase;font-family:monospace;min-width:24px;text-align:center">${prSymbol} </div>`;
   }
+
+  // Start rest timer only after the first set with actual logged data
+  const ex=S.currentSession.exercises[ei];
+  const isCardio=CARDIO_EXERCISES.has(ex.name)||ex.muscle==='Cardio';
+  const hasLoggedFirstSet=isCardio
+    ?ex.sets.some(s=>s.time||s.speed||s.resistance)
+    :(ex.sets.some(s=>!s.hasStartedRestTimer&&(s.weight||s.reps))||ex.hasLoggedFirstSet);
+  if(!isCardio&&set.weight&&set.reps&&!ex.hasLoggedFirstSet){
+    // First set with actual data logged - start rest timer
+    ex.hasLoggedFirstSet=true;
+    resetRestTimer();
+  }
+  if(isCardio&&hasLoggedFirstSet&&!ex.hasLoggedFirstSet){
+    ex.hasLoggedFirstSet=true;
+    resetRestTimer();
+  }
+
   saveState();
 }
 
@@ -1221,6 +1376,8 @@ function showWarmupCheckDialog(ei){
 function removeExercise(ei){S.currentSession.exercises.splice(ei,1);renderSessionExercises();saveState();}
 function backToDaySelect(){
   stopTimer();stopRestTimer();
+  isWorkoutTimerRunning=false;
+  isRestTimerRunning=false;
   document.getElementById('log-active').style.display='none';
   document.getElementById('log-home').style.display='block';
   renderDayGrid();
@@ -1228,7 +1385,10 @@ function backToDaySelect(){
 function cancelWorkout(){
   if(!confirm('Cancel this workout? All progress will be lost.'))return;
   S.currentSession=null;
-  stopTimer();stopRestTimer();saveState();
+  stopTimer();stopRestTimer();
+  isWorkoutTimerRunning=false;
+  isRestTimerRunning=false;
+  saveState();
   document.getElementById('log-active').style.display='none';
   document.getElementById('log-home').style.display='block';
   renderDayGrid();
@@ -1278,7 +1438,10 @@ function finishWorkout(){
     exercises:JSON.parse(JSON.stringify(S.currentSession.exercises)),
     calories:calcWorkoutCalories(S.currentSession.exercises,duration),
   });
-  S.currentSession=null;stopTimer();stopRestTimer();saveState();
+  S.currentSession=null;stopTimer();stopRestTimer();
+  isWorkoutTimerRunning=false;
+  isRestTimerRunning=false;
+  saveState();
   showSummary({def,duration,exercises:S.workouts[0].exercises,newPRs,weightUpdates,calories:S.workouts[0].calories});
   document.getElementById('log-active').style.display='none';
   document.getElementById('log-home').style.display='block';
@@ -1733,7 +1896,9 @@ function clearAllData(){
   S.profile={age:'',sex:'',weight:'',ft:'',in:'',formula:'mifflin',bfPct:'',neck:'',waist:'',hip:''};
   S.customDays=[];
   S.dayPlans=JSON.parse(JSON.stringify(DEFAULT_DAY_PLANS));
-  saveState();stopTimer();
+  saveState();stopTimer();stopRestTimer();
+  isWorkoutTimerRunning=false;
+  isRestTimerRunning=false;
   document.getElementById('log-active').style.display='none';
   document.getElementById('log-home').style.display='block';
   renderDayGrid();renderRecords();renderHistory();renderCustomExList();loadProfileInputs();
@@ -1771,10 +1936,15 @@ loadState();
 loadExerciseHelp();
 applyTheme((S.themes&&S.themes.active)||'dark');
 updateThemeBadges();
+updateAccountSection();
 renderDayGrid();
 if(S.currentSession){
   document.getElementById('log-home').style.display='none';
   document.getElementById('log-active').style.display='block';
+  // Restore timer state from saved session
+  isWorkoutTimerRunning=S.currentSession.isRunning||false;
+  if(S.currentSession.isRunning){
+    startTimer();
+  }
   renderActiveSession();
-  if(S.currentSession.isRunning)startTimer();
 }

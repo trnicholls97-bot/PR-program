@@ -1,3 +1,8 @@
+// Firebase Synchronization & Authentication
+// Handles all Firebase setup, authentication flows, Firestore data sync,
+// user session management, and cloud persistence logic.
+// Isolated from app logic - Firebase-specific concerns only.
+
 // ══════════════════════════════════════════════
 //  IRONLOG — FIREBASE SYNC LAYER
 //  Drop this AFTER your main app script block.
@@ -334,11 +339,15 @@
       // Signed in
       dismissAuthOverlay();
       buildAccountPill(user);
+      // Update account section in settings page
+      if (window.updateAuthState) window.updateAuthState(user);
       await pullFromFirestore();
     } else {
       // Signed out — remove pill and show auth screen
       const pill = document.getElementById("account-pill");
       if (pill) pill.remove();
+      // Update account section in settings page to show login button
+      if (window.updateAuthState) window.updateAuthState(null);
       // Only show overlay if not already present
       if (!document.getElementById("auth-overlay")) {
         buildAuthUI();
